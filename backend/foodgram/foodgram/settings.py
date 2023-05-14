@@ -37,6 +37,9 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'users.apps.UsersConfig',  # Регистрирую приложение users
+    'recipes.apps.RecipesConfig',  # Регистрирую приложение recipes
+    'tags.apps.TagsConfig',  # Регистрирую приложение tags
+    'ingredients.apps.IngredientsConfig',  # Регистрирую приложение ingredients
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',  # JWTAuthority
