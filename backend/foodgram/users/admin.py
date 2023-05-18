@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User
+from .models import Follow, User
 
 
 @admin.register(User)
@@ -26,3 +26,16 @@ class AdminUser(admin.ModelAdmin):
         'date_joined',
         'last_login',
     )
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'user',
+        'author',
+    )
+    search_fields = (
+        'user',
+    )
+    empty_value_display = '-пусто-'

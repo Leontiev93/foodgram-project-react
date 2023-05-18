@@ -102,3 +102,34 @@ class IngredientsToRecipes(models.Model):
     class Meta:
         verbose_name = 'Ингридиенты к рецептам'
         verbose_name_plural = 'Ингридиенты к рецептам'
+
+
+class Favorited(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='favorited',
+        verbose_name='Пользователь',
+        help_text='Кто добавляет рецепт в избранное',
+    )
+    recipes = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='favorited',
+        verbose_name='Рецепт',
+        help_text='добавьте рецепт в избранном',
+    )
+    is_favorited = models.BooleanField(
+        default=False,
+        verbose_name='В избранном ?'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=(
+                'user', 'recipes'), name='unique_favorited'),
+        ]
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
