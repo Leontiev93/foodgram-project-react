@@ -1,9 +1,27 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-from ingredients.models import Ingredient
 from tags.models import Tags
 from users.models import User
+
+
+class Ingredient(models.Model):
+    name = models.CharField(
+        verbose_name='Название продукта',
+        max_length=200,
+    )
+    measurement_unit = models.CharField(
+        verbose_name='Единица измерения',
+        max_length=200,
+    )
+
+    def __str__(self) -> str:
+        return f'{self.name} измеряется в {self.measurement_unit}'
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Ингридиент'
+        verbose_name_plural = 'Игридиенты'
 
 
 class Recipes(models.Model):
@@ -14,6 +32,11 @@ class Recipes(models.Model):
         verbose_name='автор рецепта',
         help_text='Автор рецепта',
     )
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Название',
+        help_text='добавьте название блюда',
+    )
     tags = models.ManyToManyField(
         Tags,
         null=True,
@@ -23,11 +46,17 @@ class Recipes(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
+        related_name='recipes',
         through='IngredientsToRecipes'
     )
-    is_favorited = models.BooleanField()
-    is_in_shopping_cart = models.BooleanField()
-    name = models.CharField(max_length=200)
+    is_favorited = models.BooleanField(
+        verbose_name='Избранное',
+        help_text='добавить в избраное',
+    )
+    is_in_shopping_cart = models.BooleanField(
+        verbose_name='Корзина',
+        help_text='добавить в корзину покупок',
+    )
     image = models.ImageField(upload_to='media/photos/%Y%M%d/')
     text = models.TextField(
         verbose_name='описание',
@@ -72,4 +101,35 @@ class IngredientsToRecipes(models.Model):
 
     class Meta:
         verbose_name = 'Ингридиенты к рецептам'
-        verbose_name_plural = 'Ингридиенты'
+        verbose_name_plural = 'Ингридиенты к рецептам'
+
+
+class Favorited(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='favorited',
+        verbose_name='Пользователь',
+        help_text='Кто добавляет рецепт в избранное',
+    )
+    recipes = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='favorited',
+        verbose_name='Рецепт',
+        help_text='добавьте рецепт в избранном',
+    )
+    is_favorited = models.BooleanField(
+        default=False,
+        verbose_name='В избранном ?'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=(
+                'user', 'recipes'), name='unique_favorited'),
+        ]
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
