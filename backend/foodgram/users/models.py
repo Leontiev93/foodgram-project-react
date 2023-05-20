@@ -4,6 +4,7 @@ from django.db import models
 
 from users.validators import validate_username_not_me
 
+LENGTH = 150
 
 class User(AbstractUser):
     """Модель пользователя"""
@@ -17,7 +18,7 @@ class User(AbstractUser):
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
+        max_length=LENGTH,
         unique=True,
         validators=(validate_username_not_me,
                     UnicodeUsernameValidator()
@@ -31,14 +32,20 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=150,
+        max_length=LENGTH,
+        validators=(validate_username_not_me,
+                    UnicodeUsernameValidator()
+                    ),
         help_text=(
             'Введите свое имя'
         ),
         )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=150,
+        max_length=LENGTH,
+        validators=(validate_username_not_me,
+                    UnicodeUsernameValidator()
+                    ),
         help_text=(
             'Введите свою фамилию'
         ),
