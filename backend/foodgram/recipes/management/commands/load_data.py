@@ -14,38 +14,39 @@ USER = os.getenv('POSTGRES_USER')
 PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
 
-# class Command(BaseCommand):
-#     help = 'Import CSV from data file'
+class Command(BaseCommand):
+    help = 'Import CSV from data file'
 
-#     def handle(self, *args, **options):
-#         conn = psycopg2.connect(
-#             f"host={HOST} port={PORT} dbname={DB_NAME}"
-#             f" user={USER} password={PASSWORD}")
-#         cur = conn.cursor()
-#         temp = []
-#         with open('foodgram-project-react\data\ingredients.csv', encoding='UTF-8', mode='r') as f:
-#             new = csv.reader(f, delimiter=',', )
-#             for r in new:
-#                 temp.append(r)
-#         cur.executemany(
-#             "INSERT INTO recipes_ingredient"
-#             "(name, measurement_unit) VALUES (%s, %s)", temp)
-#         conn.commit()
-#         conn.close()
-conn = psycopg2.connect(
-    f"host={HOST} port={PORT} dbname={DB_NAME}"
-    f" user={USER} password={PASSWORD}")
-cur = conn.cursor()
-temp = []
-with open(
-        'foodgram-project-react\data\ingredients.csv',
-        encoding='UTF-8',
-        mode='r') as f:
-    new = csv.reader(f, delimiter=',', )
-    for r in new:
-        temp.append(r)
-cur.executemany(
-    "INSERT INTO recipes_ingredient"
-    "(name, measurement_unit) VALUES (%s, %s)", temp)
-conn.commit()
-conn.close()
+    def handle(self, *args, **options):
+        conn = psycopg2.connect(
+            f"host={HOST} port={PORT} dbname={DB_NAME}"
+            f" user={USER} password={PASSWORD}")
+        cur = conn.cursor()
+        temp = []
+        with open(r'Z:\Dev\foodgram-project-react\data\ingredients.csv', encoding='UTF-8', mode='r') as f:
+            new = csv.reader(f, delimiter=',', )
+            for r in new:
+                temp.append(r)
+        cur.executemany(
+            "INSERT INTO recipes_ingredient"
+            "(name, measurement_unit) VALUES (%s, %s)", temp)
+        conn.commit()
+        print('Данные закгруженны, коммит выполнен')
+        conn.close()
+# conn = psycopg2.connect(
+#     f"host={HOST} port={PORT} dbname={DB_NAME}"
+#     f" user={USER} password={PASSWORD}")
+# cur = conn.cursor()
+# temp = []
+# with open(
+#         'foodgram-project-react\data\ingredients.csv',
+#         encoding='UTF-8',
+#         mode='r') as f:
+#     new = csv.reader(f, delimiter=',', )
+#     for r in new:
+#         temp.append(r)
+# cur.executemany(
+#     "INSERT INTO recipes_ingredient"
+#     "(name, measurement_unit) VALUES (%s, %s)", temp)
+# conn.commit()
+# conn.close()

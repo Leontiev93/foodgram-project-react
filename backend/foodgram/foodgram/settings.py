@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',  # Регистрирую приложение users
     'recipes.apps.RecipesConfig',  # Регистрирую приложение recipes
     'tags.apps.TagsConfig',  # Регистрирую приложение tags
+    'api.apps.ApiConfig',  # Регистрирую приложение tags
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',  # JWTAuthority
