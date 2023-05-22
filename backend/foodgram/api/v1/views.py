@@ -27,16 +27,10 @@ from recipes.models import Ingredient, IngredientsToRecipes, Favorited, Recipes
 from users.models import User, Follow
 
 
-class TagsViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-    permission_classes = (AdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
+#    permission_classes = (AdminOrReadOnly,)
 
 
 # class ReviewViewSet(viewsets.ModelViewSet):
@@ -149,12 +143,17 @@ def signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.data['username']
+    first_name = serializer.data['first_name']
+    last_name = serializer.data['last_name']
     email = serializer.data['email']
     user, create = User.objects.get_or_create(
-        username=username, email=email
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name
     )
     send_confirmation_code(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -163,27 +162,31 @@ def create_token(request):
     """Функция генерации и отправки токена."""
     serializer = CreateTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    email = get_object_or_404(
+        User,
+        email=request.data.get('email')
+    )
+    password = request.data.get('password')
+    # if not default_token_generator.check_token(
+    #     email, password
+    # ):
+    #     err = ('Указанный код подтверждения не совпадает '
+    #            'с отправленным на email')
+    #     return Response(err, status=status.HTTP_400_BAD_REQUEST)
     user = get_object_or_404(
         User,
-        username=request.data.get('username')
+        email=request.data.get('email'),
     )
-    confirm_code = request.data.get('confirmation_code')
-    if not default_token_generator.check_token(
-        user, confirm_code
-    ):
-        err = ('Указанный код подтверждения не совпадает '
-               'с отправленным на email')
-        return Response(err, status=status.HTTP_400_BAD_REQUEST)
     token = AccessToken.for_user(user)
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete', ]
+    http_method_names = ['get', 'post', 'patch', 'delete', 'retrieve']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
-    permission_classes = (AdminOrSuperuserOnly,)
+    permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('username',)
     lookup_field = 'username'

@@ -36,10 +36,10 @@ router_v1.register(
 #     'categories',
 #     CategoryViewSet
 # )
-# router_v1.register(
-#     'users',
-#     UserViewSet
-# )
+router_v1.register(
+    'users',
+    UserViewSet
+)
 
 
 urlpatterns = [

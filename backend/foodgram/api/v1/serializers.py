@@ -1,11 +1,14 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import Avg
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
+
 from api.v1.validators import (
     validate_username,
-    validate_username_not_me
+    validate_username_not_me,
+    validate_email_password
+
 )
 from tags.models import Tags
 from recipes.models import Ingredient, IngredientsToRecipes, Favorited, Recipes
@@ -42,12 +45,24 @@ class SignUpSerializer(serializers.Serializer):
                     UnicodeUsernameValidator(),
                     )
     )
-    email = serializers.EmailField(max_length=254)
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=150)
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password', 'placeholder': 'Password'}
+    )
 
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
-                  'last_name', 'role')
+                  'last_name', 'password')
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+        return super(UserSerializer, self).create(validated_data)
+
 
     def validate(self, data):
         username_exists = User.objects.filter(
@@ -69,8 +84,12 @@ class SignUpSerializer(serializers.Serializer):
 
 class CreateTokenSerializer(serializers.Serializer):
     """Сериализатор создания JWT-токена для пользователей."""
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
+    email = serializers.EmailField(max_length=150)
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password', 'placeholder': 'Password'}
+    )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -79,4 +98,4 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
-                  'last_name', 'role')
+                  'last_name',)
