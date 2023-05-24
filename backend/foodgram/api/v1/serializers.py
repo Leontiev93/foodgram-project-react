@@ -1,4 +1,5 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework.validators import UniqueValidator
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -17,16 +18,6 @@ from users.models import User, Follow
 
 class TagsSerializer(serializers.Serializer):
     """Сериализатор для модели Tag."""
-    # name = serializers.SlugRelatedField(
-    #     many=True,
-    #     queryset=Tags.objects.all(),
-    #     slug_field='slug'
-    # )
-    # slug = serializers.SlugRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     slug_field='slug'
-    # )
     id = serializers.IntegerField()
     name = serializers.CharField(allow_blank=True, required=False)
     slug = serializers.CharField(allow_blank=True, required=False)
@@ -38,7 +29,7 @@ class TagsSerializer(serializers.Serializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    """Сериализатор получения кода подтверждения."""
+    """Сериализатор создания учетной зщаписи."""
     username = serializers.CharField(
         validators=(validate_username,
                     validate_username_not_me,
@@ -63,8 +54,9 @@ class SignUpSerializer(serializers.Serializer):
         validated_data['password'] = make_password(validated_data.get('password'))
         return super(UserSerializer, self).create(validated_data)
 
-
     def validate(self, data):
+        print(self)
+        print(data)
         username_exists = User.objects.filter(
             username=data['username']
         ).exists()
@@ -92,10 +84,50 @@ class CreateTokenSerializer(serializers.Serializer):
     )
 
 
+class UserCreateSerializer(serializers.ModelSerializer):
+    """Сериалайзер для создания модели User."""
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name',
+                  'last_name')
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+        return super(UserCreateSerializer, self).create(validated_data)
+
+    def validate(self, data):
+        username_exists = User.objects.filter(
+            username=data['username']
+        ).exists()
+        email_exists = User.objects.filter(
+            email=data['email']
+        ).exists()
+        if username_exists and not email_exists:
+            raise serializers.ValidationError(
+                'Пользователь с таким именем уже есть'
+            )
+        if email_exists and not username_exists:
+            raise serializers.ValidationError(
+                'Пользователь с такой почтой уже есть'
+            )
+        return data
+
 class UserSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели User."""
+#    following = serializers.StringRelatedField(many=True, read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
-                  'last_name',)
+                  'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, following):
+        try:
+            user = self.context.get("request").user
+            if Follow.objects.filter(user=user, author=following):
+                return True
+            return False
+        except:
+            return None

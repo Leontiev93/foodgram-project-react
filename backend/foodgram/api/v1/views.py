@@ -16,6 +16,7 @@ from .serializers import (
     CreateTokenSerializer,
     SignUpSerializer,
     UserSerializer,
+    UserCreateSerializer
 )
 from .permissions import (
     AdminOrReadOnly,
@@ -89,39 +90,11 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 #         return queryset
 
 
-# class GenreViewSet(mixins.CreateModelMixin,
-#                    mixins.ListModelMixin,
-#                    mixins.DestroyModelMixin,
-#                    viewsets.GenericViewSet):
-#     queryset = Genre.objects.all()
-#     serializer_class = GenreSerializer
-#     permission_classes = (AdminOrReadOnly,)
-#     pagination_class = PageNumberPagination
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('name',)
-#     lookup_field = 'slug'
-
-
-# class CategoryViewSet(mixins.CreateModelMixin,
-#                       mixins.ListModelMixin,
-#                       mixins.DestroyModelMixin,
-#                       viewsets.GenericViewSet):
-#     queryset = Category.objects.all()
-#     serializer_class = CategorySerializer
-#     permission_classes = (AdminOrReadOnly,)
-#     pagination_class = PageNumberPagination
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('name',)
-#     lookup_field = 'slug'
-
 
 def send_confirmation_code(user):
     """Функция отправки кода подтверждения."""
     confirmation_code = default_token_generator.make_token(user)
 
-    # User.objects.filter(
-    #     username=user
-    # ).update(confirmation_code=confirmation_code)
     send_mail(
         subject='Код подтверждения',
         message=(
@@ -184,13 +157,13 @@ def create_token(request):
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'retrieve']
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('username',)
     lookup_field = 'username'
 
+    
     @action(
         methods=[
             'get',
@@ -211,3 +184,9 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return UserCreateSerializer
+        return UserSerializer
+
