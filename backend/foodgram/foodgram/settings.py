@@ -48,8 +48,10 @@ INSTALLED_APPS = [
     'tags.apps.TagsConfig',  # Регистрирую приложение tags
     'api.apps.ApiConfig',  # Регистрирую приложение api
     'rest_framework',
+    'corsheaders',
     'django_filters',
-    'rest_framework_simplejwt',  # JWTAuthority
+#    'rest_framework_simplejwt',  # JWTAuthority
+    'rest_framework.authtoken',
     'djoser',
 ]
 
@@ -58,6 +60,7 @@ AUTH_USER_MODEL = 'users.User' # Переопределение модели п�
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -155,14 +158,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Авторизация по JWT токенам
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
+# ACCOUNT_AUTHENTICATION_METHOD = "email"
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
 
 # Настройки JWT токенов
 SIMPLE_JWT = {
@@ -193,8 +199,12 @@ SIMPLE_JWT = {
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
     'SLIDING_TOKEN_LIFETIME': timedelta(days=5),
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.MyTokenObtainPairSerializer",
 }
 
 # Настройки для отправки почты (эмуляция в папку проекта sent_emails)
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$' 

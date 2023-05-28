@@ -6,16 +6,9 @@ from users.validators import validate_username_not_me
 
 LENGTH = 150
 
+
 class User(AbstractUser):
     """Модель пользователя"""
-    ADMIN = "admin"
-    MODERATOR = "moderator"
-    USER = "user"
-    ROLE = (
-        (ADMIN, "Администратор"),
-        (MODERATOR, "Модератор"),
-        (USER, "Пользователь"),
-    )
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=LENGTH,
@@ -64,28 +57,6 @@ class User(AbstractUser):
         symmetrical=False
     )
 
-    role = models.CharField(
-        max_length=10,
-        choices=ROLE,
-        default=USER,
-        verbose_name="Роль пользователя",
-    )
-
-    @property
-    def is_admin(self):
-        """Признак админа."""
-        return (
-            self.role == self.ADMIN
-            or self.is_superuser
-        )
-
-    @property
-    def is_moderator(self):
-        """Признак модератора."""
-        return (
-            self.role == self.MODERATOR
-            or self.is_staff
-        )
     REQUIRED_FIELDS = ['first_name']
 
     class Meta:

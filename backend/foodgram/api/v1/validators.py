@@ -1,7 +1,18 @@
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
 USERNAME_MAX_LEN_VALUE = 150
+
+
+def validateEmail(email):
+    message = 'введите правильный email адрес'
+    try:
+        validate_email(email)
+        return True
+    except ValidationError(message,):
+        return False
 
 
 def validate_username(value):

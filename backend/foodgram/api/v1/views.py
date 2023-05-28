@@ -4,19 +4,28 @@ from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, parser_classes, renderer_classes
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import mixins
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.views import TokenBlacklistView
+from rest_framework import parsers, renderers
+from rest_framework.authtoken.models import Token
 
 from .serializers import (
+    IngredientSerializer,
     TagsSerializer,
     CreateTokenSerializer,
-    SignUpSerializer,
+    RecipesSerializer,
+    FollowSerializer,
+    FollowlistSerializer,
+    AuthCustomTokenSerializer,
     UserSerializer,
-    UserCreateSerializer
+    UserCreateSerializer,
+    UserChangePasswordSerializer
 )
 from .permissions import (
     AdminOrReadOnly,
@@ -31,7 +40,21 @@ from users.models import User, Follow
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-#    permission_classes = (AdminOrReadOnly,)
+
+
+class RecipesViewSet(viewsets.ModelViewSet):
+    queryset = Recipes.objects.all()
+    serializer_class = RecipesSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+
+
 
 
 # class ReviewViewSet(viewsets.ModelViewSet):
@@ -90,70 +113,6 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 #         return queryset
 
 
-
-def send_confirmation_code(user):
-    """Функция отправки кода подтверждения."""
-    confirmation_code = default_token_generator.make_token(user)
-
-    send_mail(
-        subject='Код подтверждения',
-        message=(
-            f'Приветcвую, {user.username}!\n'
-            f'Это письмо содержит код подтверждения регистрации:\n'
-            f'{confirmation_code}\n'
-            f'Чтоб получить токен, отправьте запрос\n'
-            'с полями username и confirmation_code на /api/v1/auth/token/.'
-        ),
-        from_email='code@YaIMDB.example',
-        recipient_list=[user.email]
-    )
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def signup(request):
-    """Получаем код подтверждения на почту."""
-    serializer = SignUpSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    username = serializer.data['username']
-    first_name = serializer.data['first_name']
-    last_name = serializer.data['last_name']
-    email = serializer.data['email']
-    user, create = User.objects.get_or_create(
-        username=username,
-        email=email,
-        first_name=first_name,
-        last_name=last_name
-    )
-    send_confirmation_code(user)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def create_token(request):
-    """Функция генерации и отправки токена."""
-    serializer = CreateTokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    email = get_object_or_404(
-        User,
-        email=request.data.get('email')
-    )
-    password = request.data.get('password')
-    # if not default_token_generator.check_token(
-    #     email, password
-    # ):
-    #     err = ('Указанный код подтверждения не совпадает '
-    #            'с отправленным на email')
-    #     return Response(err, status=status.HTTP_400_BAD_REQUEST)
-    user = get_object_or_404(
-        User,
-        email=request.data.get('email'),
-    )
-    token = AccessToken.for_user(user)
-    return Response({'token': str(token)}, status=status.HTTP_200_OK)
-
-
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'retrieve']
     queryset = User.objects.all()
@@ -161,9 +120,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('username',)
-    lookup_field = 'username'
 
-    
     @action(
         methods=[
             'get',
@@ -177,16 +134,103 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = UserSerializer(request.user)
             return Response(serializer.data)
-
         serializer = UserSerializer(
             request.user, data=request.data, partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=request.user.role)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        methods=[
+            'post',
+        ],
+        detail=False,
+        url_path='set_password',
+        permission_classes=[IsAuthenticated],
+    )
+    @action(["post"], detail=False)
+    def set_password(self, request, *args, **kwargs):
+        serializer = UserChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return UserCreateSerializer
         return UserSerializer
 
+
+@api_view(['POST'])
+@parser_classes([parsers.FormParser,
+                 parsers.MultiPartParser,
+                 parsers.JSONParser,
+                 ])
+@renderer_classes([renderers.JSONRenderer, ])
+def create_token(request):
+    serializer = AuthCustomTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.validated_data['user']
+    token, created = Token.objects.get_or_create(user=user)
+
+    content = {
+        'token': token.key,
+    }
+
+    return Response(content)
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+#    serializer_class = FollowSerializer
+    permission_classes = (IsAuthenticated, )
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('following__username',)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+#    def perform_create(self, serializer):
+#         title_id = self.kwargs.get('title_id')
+#         title = get_object_or_404(Title, pk=title_id)
+#         serializer.save(author=self.request.user, title=title)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            print(111111111)
+            print(self.kwargs)
+            print(self.args)
+            print(serializer.data)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response(serializer.data)
+
+    def get_queryset(self):
+#        print(111111111)
+#        print([i.user for i in self.request.user.from_follower.all()])
+        return self.request.user.from_follower.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return FollowSerializer
+        return FollowlistSerializer
+
+#     def get_queryset(self):
+# #         queryset = Title.objects.all()
+# #         category = self.request.query_params.get('category')
+# #         genre = self.request.query_params.get('genre')
+# #         if genre is not None:
+# #             queryset = Title.objects.filter(genre__slug=genre)
+# #             return queryset
+# #         elif category is not None:
+# #             queryset = Title.objects.filter(category__slug=category)
+# #             return queryset
+# #         return queryset
