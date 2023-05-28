@@ -92,7 +92,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели User."""
-#    following = serializers.StringRelatedField(many=True, read_only=True)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -100,7 +99,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed')
 
-    def get_is_subscribed(self, following):
+    def get_is_subscribed(self, following, *args, **kwargs):
+        print(args)
+        print(kwargs)
+        print(1111)
         try:
             user = self.context.get("request").user
             if Follow.objects.filter(user=user, author=following):
@@ -109,8 +111,8 @@ class UserSerializer(serializers.ModelSerializer):
         except:
             return False
 
-class UserChangePasswordSerializer(serializers.Serializer):
 
+class UserChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
@@ -127,8 +129,6 @@ class AuthCustomTokenSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
         if email and password:
-            # Check if user sent email
-            print(validateEmail(email))
             if validateEmail(email):
                 user_request = get_object_or_404(
                     User,
@@ -137,17 +137,15 @@ class AuthCustomTokenSerializer(serializers.Serializer):
                 email = user_request.username
 
             user = authenticate(username=email, password=password)
-            print(user)
-
             if user:
                 if not user.is_active:
-                    msg = _('User account is disabled.')
+                    msg = 'User account is disabled.'
                     raise ValidationError(msg)
             else:
-                msg = _('Unable to log in with provided credentials.')
+                msg = 'Unable to log in with provided credentials.'
                 raise ValidationError(msg)
         else:
-            msg = _('Must include "email or username" and "password"')
+            msg = 'Must include "email or username" and "password"'
             raise ValidationError(msg)
 
         attrs['user'] = user
@@ -159,11 +157,13 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = "__all__"
 
+
 class IngredientsToRecipesSerializer(serializers.ModelSerializer):
     recipes = IngredientSerializer()
     class Meta:
         model = IngredientsToRecipes
         fields = "__all__"
+
 
 class RecipesSerializer(serializers.ModelSerializer):
     tags = TagsSerializer(many=True, read_only=True)
@@ -188,7 +188,7 @@ class FollowSerializer(serializers.ModelSerializer):
     #     queryset=User.objects.all()
     # )
     author = UserSerializer()
-    
+
     class Meta:
 #        fields = '__all__'
 #        fields = ['recipes',]

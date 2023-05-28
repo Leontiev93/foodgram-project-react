@@ -8,7 +8,8 @@ from .views import (
     IngredientsViewSet,
     TagsViewSet,
     create_token,
-    FollowViewSet,
+#    FollowViewSet,
+#    follow,
     UserViewSet,
     RecipesViewSet
 )
@@ -26,12 +27,12 @@ router_v1 = routers.DefaultRouter()
 #     ReviewViewSet,
 #     basename='review'
 # )
-router_v1.register(
-#    r'users/(?P<user_id>\d+)/subscriptions',
-    'users/subscriptions',
-    FollowViewSet,
-    basename='follow'
-)
+# router_v1.register(
+# #    r'users/(?P<id>\d+)/subscriptions',
+#     'users/subscriptions',
+#     FollowViewSet,
+#     basename='follow'
+# )
 router_v1.register(
     'ingredients',
     IngredientsViewSet,
@@ -53,6 +54,7 @@ router_v1.register(
 
 urlpatterns = [
     path('', include(router_v1.urls)),
+#    path(r'users/(?P<id>\d+)/subscribe', follow, name="subscribe"),
     path("auth/token/login/", create_token, name="token"),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),

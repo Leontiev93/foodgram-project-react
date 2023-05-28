@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action, api_view, permission_classes, parser_classes, renderer_classes
 from rest_framework.response import Response
 from rest_framework import filters
@@ -21,7 +22,7 @@ from .serializers import (
     CreateTokenSerializer,
     RecipesSerializer,
     FollowSerializer,
-    FollowlistSerializer,
+#    FollowlistSerializer,
     AuthCustomTokenSerializer,
     UserSerializer,
     UserCreateSerializer,
@@ -149,7 +150,6 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='set_password',
         permission_classes=[IsAuthenticated],
     )
-    @action(["post"], detail=False)
     def set_password(self, request, *args, **kwargs):
         serializer = UserChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -157,6 +157,44 @@ class UserViewSet(viewsets.ModelViewSet):
         self.request.user.set_password(serializer.data["new_password"])
         self.request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'],
+            url_path=r'(?P<id>\d+)/subscribe',
+            permission_classes=[IsAuthenticated],)
+    def follow(self, request, *args, **kwargs):
+        print(request.data)
+        print("1111111")
+        print(args)
+        print(kwargs)
+        user_id = kwargs['id']
+        user = get_object_or_404(User, pk=user_id)
+        print(user)
+        serializer = FollowSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False,
+            url_path='subscriptions',
+            permission_classes=[IsAuthenticated],)
+    def subscriptions(self, request, *args, **kwargs):
+        print(request.data)
+        print("222222")
+        print(args)
+        print(kwargs)
+        content = []
+        for i in self.request.user.from_follower.all():
+            serializer = UserSerializer(i.author)
+#        print([i.author for i in self.request.user.from_follower.all()])
+            print(serializer.data)
+            content.append(serializer.data)
+#        print(serializer.is_valid(raise_exception=True))
+# #        user_id = kwargs['id']
+#         user = get_object_or_404(User, pk=user_id)
+#         print(user)
+#         serializer = FollowSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+        return Response(content, status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -183,54 +221,61 @@ def create_token(request):
     return Response(content)
 
 
-class FollowViewSet(viewsets.ModelViewSet):
-#    serializer_class = FollowSerializer
-    permission_classes = (IsAuthenticated, )
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('following__username',)
+# class FollowViewSet(mixins.CreateModelMixin,
+#                     mixins.ListModelMixin,
+#                     mixins.DestroyModelMixin,
+#                     viewsets.GenericViewSet):
+#     serializer_class = FollowSerializer
+#     permission_classes = (IsAuthenticated, )
+#     filter_backends = (filters.SearchFilter,)
+#     search_fields = ('following__username',)
+#     queryset = g
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+
+#     @action(
+#         methods=[
+#             'post',
+#             'delete',
+#         ],
+#         detail=False,
+#         url_path=r'(?P<id>\d+)/subscribe',
+#         permission_classes=[IsAuthenticated],
+#     )
+#     def follow(self, request, *args, **kwargs):
+#         print("1111111")
+#         print(args)
+#         print(kwargs)
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
     
 #    def perform_create(self, serializer):
 #         title_id = self.kwargs.get('title_id')
 #         title = get_object_or_404(Title, pk=title_id)
 #         serializer.save(author=self.request.user, title=title)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.filter_queryset(self.get_queryset())
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            print(111111111)
-            print(self.kwargs)
-            print(self.args)
-            print(serializer.data)
-            return self.get_paginated_response(serializer.data)
+    #     page = self.paginate_queryset(queryset)
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         print(111111111)
+    #         print(self.kwargs)
+    #         print(self.args)
+    #         print(serializer.data)
+    #         return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
+    #     serializer = self.get_serializer(queryset, many=True)
         
-        return Response(serializer.data)
+    #     return Response(serializer.data)
 
-    def get_queryset(self):
-#        print(111111111)
-#        print([i.user for i in self.request.user.from_follower.all()])
-        return self.request.user.from_follower.all()
+    # def get_queryset(self):
+    #     return self.request.user.from_follower.all()
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return FollowSerializer
-        return FollowlistSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == 'POST':
+    #         return FollowSerializer
+    #     return FollowSerializer
 
-#     def get_queryset(self):
-# #         queryset = Title.objects.all()
-# #         category = self.request.query_params.get('category')
-# #         genre = self.request.query_params.get('genre')
-# #         if genre is not None:
-# #             queryset = Title.objects.filter(genre__slug=genre)
-# #             return queryset
-# #         elif category is not None:
-# #             queryset = Title.objects.filter(category__slug=category)
-# #             return queryset
-# #         return queryset
+
+
