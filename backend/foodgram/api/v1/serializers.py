@@ -170,13 +170,13 @@ class RecipesSerializer(serializers.ModelSerializer):
 #    author = UserSerializer(read_only=True, )
 #    ingredients = serializers.StringRelatedField(many=True, read_only=True)
     ingredients = IngredientSerializer(many=True, required=False)
-    is_favor = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipes
         fields = "__all__"
 
-    def get_is_favor(self, recipes, *args, **kwargs):
+    def get_is_favorited(self, recipes, *args, **kwargs):
         print(self.context.get("request").query_params)
 #        print(self.request)
         user = self.context.get("request").user

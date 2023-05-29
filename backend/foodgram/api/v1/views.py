@@ -181,7 +181,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = FollowSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
     @action(detail=False,
             url_path='subscriptions',
             permission_classes=[IsAuthenticated],)
