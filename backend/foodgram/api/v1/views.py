@@ -41,11 +41,20 @@ from users.models import User, Follow
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-
+    
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    queryset = Recipes.objects.all()
+#    queryset = Recipes.objects.all()
     serializer_class = RecipesSerializer
+
+    def get_queryset(self):
+        queryset = Recipes.objects.all()
+        if self.request.query_params.get('is_favorited') is not None:
+            queryset = Recipes.objects.filter(
+                id__in=[i.recipes.id for i in Favorited.objects.filter(
+                    user=self.request.user.id)]
+                )
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

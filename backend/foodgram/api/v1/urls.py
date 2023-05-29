@@ -44,7 +44,8 @@ router_v1.register(
 )
 router_v1.register(
     'recipes',
-    RecipesViewSet
+    RecipesViewSet,
+    basename='recipes'
 )
 router_v1.register(
     'users',

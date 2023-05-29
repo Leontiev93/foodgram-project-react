@@ -1,14 +1,12 @@
 from django.contrib import admin
 
-from .models import Recipes, IngredientsToRecipes, Ingredient, Favorited
+from .models import Recipes, IngredientsToRecipes, Ingredient, Favorited, ShoppingCart
 
 
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
     fields = [
         'tags',
-        'is_favorited',
-        'is_in_shopping_cart',
         'name',
         'cooking_time',
         'author',
@@ -18,15 +16,13 @@ class RecipesAdmin(admin.ModelAdmin):
         'pk',
         '_tags',
         '_ingredients',
-        'is_favorited',
-        'is_in_shopping_cart',
         'name',
         'cooking_time',
         # 'favorited'
     )
     search_fields = ('name',)
-    list_filter = ('is_favorited',)
-    list_editable = ('is_favorited', 'is_in_shopping_cart')
+    list_filter = ('author',)
+    list_editable = ('cooking_time', )
     empty_value_display = '-пусто-'
 
     def _tags(self, obj):
@@ -96,4 +92,27 @@ class FavoritedAdmin(admin.ModelAdmin):
         'is_favorited',
     )
     list_editable = ('is_favorited',)
+    empty_value_display = '-пусто-'
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'user',
+        'recipes',
+        'is_in_shopping_cart',
+    )
+    search_fields = (
+        'pk',
+        'user',
+        'recipes',
+        'is_in_shopping_cart',
+    )
+    list_filter = (
+        'user',
+        'recipes',
+        'is_in_shopping_cart',
+    )
+    list_editable = ('is_in_shopping_cart',)
     empty_value_display = '-пусто-'

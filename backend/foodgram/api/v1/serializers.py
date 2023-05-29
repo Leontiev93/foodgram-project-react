@@ -10,7 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from django.core.validators import validate_email
-
+from django.db.models import Exists
+from django.db.models import OuterRef
 
 from api.v1.validators import (
     validate_username,
@@ -100,9 +101,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, following, *args, **kwargs):
-        print(args)
-        print(kwargs)
-        print(1111)
         try:
             user = self.context.get("request").user
             if Follow.objects.filter(user=user, author=following):
@@ -160,6 +158,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientsToRecipesSerializer(serializers.ModelSerializer):
     recipes = IngredientSerializer()
+
     class Meta:
         model = IngredientsToRecipes
         fields = "__all__"
@@ -171,10 +170,19 @@ class RecipesSerializer(serializers.ModelSerializer):
 #    author = UserSerializer(read_only=True, )
 #    ingredients = serializers.StringRelatedField(many=True, read_only=True)
     ingredients = IngredientSerializer(many=True, required=False)
+    is_favor = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipes
         fields = "__all__"
+
+    def get_is_favor(self, recipes, *args, **kwargs):
+        print(self.context.get("request").query_params)
+#        print(self.request)
+        user = self.context.get("request").user
+        if Favorited.objects.filter(user=user.id, recipes=recipes.id).exists():
+            return True
+        return False
 
 
 class FollowSerializer(serializers.ModelSerializer):
