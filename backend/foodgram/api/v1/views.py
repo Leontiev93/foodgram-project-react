@@ -1,4 +1,4 @@
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,7 +22,7 @@ from .serializers import (
     CreateTokenSerializer,
     RecipesSerializer,
     FollowSerializer,
-#    FollowlistSerializer,
+    RecipesListSerializer,
     AuthCustomTokenSerializer,
     UserSerializer,
     UserCreateSerializer,
@@ -41,11 +41,17 @@ from users.models import User, Follow
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-    
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
 
 class RecipesViewSet(viewsets.ModelViewSet):
-#    queryset = Recipes.objects.all()
-    serializer_class = RecipesSerializer
+    queryset = Recipes.objects.all()
+#    serializer_class = RecipesSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ['tags', 'author']
+    search_fields = ('author',) 
 
     def get_queryset(self):
         queryset = Recipes.objects.all()
@@ -59,12 +65,19 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_serializer_class(self):
+        # if self.action in ('favorite', 'shopping_cart'):
+        #     return RecipeShortSerializer
+        if self.action in ('create', 'partial_update'):
+            return RecipesSerializer
+        return RecipesListSerializer
+
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-
-
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 # class ReviewViewSet(viewsets.ModelViewSet):
@@ -127,7 +140,7 @@ class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'retrieve']
     queryset = User.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = (IsAuthenticated,)
+#    permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('username',)
 
@@ -171,39 +184,38 @@ class UserViewSet(viewsets.ModelViewSet):
             url_path=r'(?P<id>\d+)/subscribe',
             permission_classes=[IsAuthenticated],)
     def follow(self, request, *args, **kwargs):
-        print(request.data)
-        print("1111111")
-        print(args)
-        print(kwargs)
         user_id = kwargs['id']
         user = get_object_or_404(User, pk=user_id)
-        print(user)
-        serializer = FollowSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            Follow.objects.create(user_id=request.user.id, author_id=user_id)
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception:
+            if request.user.id == int(user_id):
+                return Response(
+                        "ползователь не может быть подписан на сомого себя",
+                        status.HTTP_400_BAD_REQUEST)
+            return Response(
+                f"ползователь {request.user} уже подписан на {user.username}",
+                status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False,
-            url_path='subscriptions',
-            permission_classes=[IsAuthenticated],)
-    def subscriptions(self, request, *args, **kwargs):
-        print(request.data)
-        print("222222")
-        print(args)
-        print(kwargs)
-        content = []
-        for i in self.request.user.from_follower.all():
-            serializer = UserSerializer(i.author)
-#        print([i.author for i in self.request.user.from_follower.all()])
-            print(serializer.data)
-            content.append(serializer.data)
-#        print(serializer.is_valid(raise_exception=True))
-# #        user_id = kwargs['id']
-#         user = get_object_or_404(User, pk=user_id)
-#         print(user)
-#         serializer = FollowSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
+    @follow.mapping.delete
+    def unfollow(self, request, *args, **kwargs):
+        user_id = kwargs['id']
+        user = get_object_or_404(User, pk=user_id)
+        try:
+            get_object_or_404(
+               Follow, user_id=request.user.id,
+               author_id=user_id).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception:
+            if request.user.id == int(user_id):
+                return Response(
+                    "ползователь не может быть подписан на сомого себя",
+                    status.HTTP_400_BAD_REQUEST)
+            return Response(
+                f"ползователь {request.user} не подписан на {user.username}",
+                status.HTTP_400_BAD_REQUEST)
 
-        return Response(content, status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -230,61 +242,13 @@ def create_token(request):
     return Response(content)
 
 
-# class FollowViewSet(mixins.CreateModelMixin,
-#                     mixins.ListModelMixin,
-#                     mixins.DestroyModelMixin,
-#                     viewsets.GenericViewSet):
-#     serializer_class = FollowSerializer
-#     permission_classes = (IsAuthenticated, )
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('following__username',)
-#     queryset = g
+class FollowViewSet(mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
+    serializer_class = FollowSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAuthenticated, )
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('following__username',)
 
-
-#     @action(
-#         methods=[
-#             'post',
-#             'delete',
-#         ],
-#         detail=False,
-#         url_path=r'(?P<id>\d+)/subscribe',
-#         permission_classes=[IsAuthenticated],
-#     )
-#     def follow(self, request, *args, **kwargs):
-#         print("1111111")
-#         print(args)
-#         print(kwargs)
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    
-#    def perform_create(self, serializer):
-#         title_id = self.kwargs.get('title_id')
-#         title = get_object_or_404(Title, pk=title_id)
-#         serializer.save(author=self.request.user, title=title)
-
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.filter_queryset(self.get_queryset())
-
-    #     page = self.paginate_queryset(queryset)
-    #     if page is not None:
-    #         serializer = self.get_serializer(page, many=True)
-    #         print(111111111)
-    #         print(self.kwargs)
-    #         print(self.args)
-    #         print(serializer.data)
-    #         return self.get_paginated_response(serializer.data)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-        
-    #     return Response(serializer.data)
-
-    # def get_queryset(self):
-    #     return self.request.user.from_follower.all()
-
-    # def get_serializer_class(self):
-    #     if self.request.method == 'POST':
-    #         return FollowSerializer
-    #     return FollowSerializer
-
-
-
+    def get_queryset(self):
+        return self.request.user.from_follower.all()
