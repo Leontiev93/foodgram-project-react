@@ -97,7 +97,7 @@ class IngredientsToRecipes(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.ingredient} в {self.recipes}'
+        return f'В {self.recipes} -->{self.amount} {self.ingredient}'
 
     class Meta:
         verbose_name = 'Ингридиенты к рецептам'
