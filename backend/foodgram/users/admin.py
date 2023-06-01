@@ -12,7 +12,7 @@ class AdminUser(admin.ModelAdmin):
         'password',
         'first_name',
         'last_name',
-        'role'
+        '_following'
     )
     search_fields = (
         'username',
@@ -20,12 +20,17 @@ class AdminUser(admin.ModelAdmin):
         'first_name',
         'last_name',
     )
-    list_editable = ('role',)
     empty_value_display = '-пусто-'
     exclude = (
         'date_joined',
         'last_login',
+        'password'
     )
+
+    def _following(self, obj):
+        print(self)
+        print(obj.following.all())
+        return ', '.join([following.username for following in obj.following.all()])
 
 
 @admin.register(Follow)
