@@ -197,11 +197,15 @@ class IngredientsToRecipesCreateSerializer(serializers.ModelSerializer):
         queryset=Ingredient.objects.all(),
         required=True
     )
+    recipes = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        source='ingredient'
+    )
     amount = serializers.IntegerField(required=True)
 
     class Meta:
         model = IngredientsToRecipes
-        fields = ('id', 'amount')
+        fields = ('id', 'recipes', 'amount')
 
 
 class RecipesListSerializer(serializers.ModelSerializer):
@@ -256,7 +260,10 @@ class RecipesSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    ingredients = IngredientsToRecipesCreateSerializer(many=True)
+    ingredients = IngredientsToRecipesCreateSerializer(
+        many=True,
+        source="ingredients_amount"
+    )
 
     class Meta:
         model = Recipes
@@ -267,14 +274,9 @@ class RecipesSerializer(serializers.ModelSerializer):
     @staticmethod
     def save_ingredients(recipes, ingredients):
         ingredients_list = []
-        print("aaaaaaaaa")
-        print(recipes)
         for ingredient in ingredients:
             current_ingredient = ingredient['id']
-            print(type(current_ingredient))
             current_amount = int(ingredient['amount'])
-            print(type(recipes))
-            print(current_amount)
             ingredients_list.append(
                 IngredientsToRecipes(
                     recipes=recipes,
@@ -282,9 +284,6 @@ class RecipesSerializer(serializers.ModelSerializer):
                     amount=current_amount
                 )
             )
-        print("aaaaaaaaa")
-        print(type(ingredients_list[0]))
-        print(ingredients_list)
         IngredientsToRecipes.objects.bulk_create(ingredients_list)
 
     def validate(self, data):
@@ -296,7 +295,9 @@ class RecipesSerializer(serializers.ModelSerializer):
                 }
             )
         ingredients_list = []
-        ingredients_amount = data.get('ingredients')
+        print(111111111)
+        print(data)
+        ingredients_amount = data.get('ingredients_amount')
         for ingredient in ingredients_amount:
             if int(ingredient.get('amount')) <= 0:
                 raise serializers.ValidationError(
@@ -314,7 +315,9 @@ class RecipesSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
+        print(2222222)
+        print(validated_data)
+        ingredients = validated_data.pop('ingredients_amount')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
         recipe.tags.add(*tags)
