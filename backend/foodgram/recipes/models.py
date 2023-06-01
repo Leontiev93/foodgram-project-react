@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.db.models import Exists, OuterRef
 
 from tags.models import Tags
 from users.models import User
@@ -22,6 +23,13 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Игридиенты'
+
+
+# class ProductQuerySet(models.QuerySet):
+#     def additional_fields(self, user_id, recipes_id):
+#         return self.annotate(
+#             is_favorited=Exists(Favorited.objects.filter(user=user_id, recipes=recipes_id))
+#         )
 
 
 class Recipes(models.Model):
@@ -48,14 +56,6 @@ class Recipes(models.Model):
         Ingredient,
         related_name='recipes',
         through='IngredientsToRecipes'
-    )
-    is_favorited = models.BooleanField(
-        verbose_name='Избранное',
-        help_text='добавить в избраное',
-    )
-    is_in_shopping_cart = models.BooleanField(
-        verbose_name='Корзина',
-        help_text='добавить в корзину покупок',
     )
     image = models.ImageField(upload_to='media/photos/%Y%M%d/')
     text = models.TextField(
@@ -97,7 +97,7 @@ class IngredientsToRecipes(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.ingredient} в {self.recipes}'
+        return f'В {self.recipes} -->{self.amount} {self.ingredient}'
 
     class Meta:
         verbose_name = 'Ингридиенты к рецептам'
@@ -125,11 +125,41 @@ class Favorited(models.Model):
         default=False,
         verbose_name='В избранном ?'
     )
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
                 'user', 'recipes'), name='unique_favorited'),
         ]
         verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
+        verbose_name_plural = 'Избранные'
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='shoppingcart',
+        verbose_name='Пользователь',
+        help_text='Кто добавляет рецепт в корзину',
+    )
+    recipes = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='shoppingcart',
+        verbose_name='Рецепт',
+        help_text='добавлен рецепт в корзину',
+    )
+    is_in_shopping_cart = models.BooleanField(
+        default=False,
+        verbose_name='В корзине ?'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=(
+                'user', 'recipes'), name='unique_shoppingcart'),
+        ]
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'

@@ -6,16 +6,9 @@ from users.validators import validate_username_not_me
 
 LENGTH = 150
 
+
 class User(AbstractUser):
     """Модель пользователя"""
-    ADMIN = "admin"
-    MODERATOR = "moderator"
-    USER = "user"
-    ROLE = (
-        (ADMIN, "Администратор"),
-        (MODERATOR, "Модератор"),
-        (USER, "Пользователь"),
-    )
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=LENGTH,
@@ -57,28 +50,13 @@ class User(AbstractUser):
             'Введите электронный адрес в формате name@yandex.ru'
         ),
         )
-    role = models.CharField(
-        max_length=10,
-        choices=ROLE,
-        default=USER,
-        verbose_name="Роль пользователя",
+    following = models.ManyToManyField(
+        'self',
+        through='Follow',
+        related_name='followers',
+        symmetrical=False
     )
 
-    @property
-    def is_admin(self):
-        """Признак админа."""
-        return (
-            self.role == self.ADMIN
-            or self.is_superuser
-        )
-
-    @property
-    def is_moderator(self):
-        """Признак модератора."""
-        return (
-            self.role == self.MODERATOR
-            or self.is_staff
-        )
     REQUIRED_FIELDS = ['first_name']
 
     class Meta:
@@ -100,20 +78,21 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower',
+        related_name='from_follower',
         verbose_name='Подписчик',
         help_text='Тот кто подписался',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following',
+        related_name='to_following',
         verbose_name='Кумир',
         help_text='Тот на кого подписались',
     )
+    created = models.DateTimeField(auto_now_add=True)
 
-    # def __str__(self) -> str:
-    #     return self.user
+    def __str__(self):
+        return f'{self.user} подписался на {self.author}'
 
     class Meta:
         constraints = [
