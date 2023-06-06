@@ -15,7 +15,7 @@ def validateemail(email):
 
 
 def validate_username(value):
-    """Валидатор поля Usernae"""
+    """Валидатор поля Username"""
     if len(value) > USERNAME_MAX_LEN_VALUE:
         raise serializers.ValidationError(
             f'Максимальная длина превышает {USERNAME_MAX_LEN_VALUE} символов!'
