@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Exists, OuterRef
 
 from tags.models import Tags
 from users.models import User
@@ -25,13 +24,6 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Игридиенты'
 
 
-# class ProductQuerySet(models.QuerySet):
-#     def additional_fields(self, user_id, recipes_id):
-#         return self.annotate(
-#             is_favorited=Exists(Favorited.objects.filter(user=user_id, recipes=recipes_id))
-#         )
-
-
 class Recipes(models.Model):
     author = models.ForeignKey(
         User,
@@ -48,14 +40,14 @@ class Recipes(models.Model):
     tags = models.ManyToManyField(
         Tags,
         null=True,
-        related_name='recipes',
         verbose_name='тег рецепта',
         help_text='добавьте тег рецепта',
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipes',
-        through='IngredientsToRecipes'
+        through='IngredientsToRecipes',
+        through_fields=('recipes', 'ingredient'),
     )
     image = models.ImageField(upload_to='media/photos/%Y%M%d/')
     text = models.TextField(
@@ -125,6 +117,7 @@ class Favorited(models.Model):
         default=False,
         verbose_name='В избранном ?'
     )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
