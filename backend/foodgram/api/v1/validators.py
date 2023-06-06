@@ -7,11 +7,10 @@ USERNAME_MAX_LEN_VALUE = 150
 
 
 def validateEmail(email):
-    message = 'введите правильный email адрес'
     try:
         validate_email(email)
         return True
-    except ValidationError(message):
+    except ValidationError['введите правильный email адрес']:
         return False
 
 
