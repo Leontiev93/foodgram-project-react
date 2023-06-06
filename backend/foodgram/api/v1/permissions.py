@@ -7,7 +7,7 @@ class CreateNewUser(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return ((request.method == "POST" and request.user.is_anonymous)
-                 or request.user.is_authenticated)
+                or request.user.is_authenticated)
 
 
 # Для моделей Recipes
@@ -25,4 +25,3 @@ class AdminOrAuthor(permissions.BasePermission):
                 or request.user.is_superuser
                 or obj.author == request.user
                 )
-

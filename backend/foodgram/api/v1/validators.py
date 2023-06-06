@@ -11,7 +11,7 @@ def validateEmail(email):
     try:
         validate_email(email)
         return True
-    except ValidationError(message,):
+    except ValidationError(message):
         return False
 
 
@@ -42,7 +42,8 @@ def validate_email_password(self, attrs):
         user = authenticate(request=self.context.get('request'),
                             email=email, password=password)
         if not user:
-            msg = _('Не возможно войти в систему email и password не совпадают.')
+            msg = _(
+                 'Не возможно войти в систему email и password не совпадают.')
             raise serializers.ValidationError(msg, code='authorization')
     else:
         msg = _('Must include "email" and "password".')

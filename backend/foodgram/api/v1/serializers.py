@@ -2,7 +2,6 @@ import base64
 
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.shortcuts import get_object_or_404
-from rest_framework.validators import UniqueValidator
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
@@ -15,7 +14,11 @@ from api.v1.validators import (
     validateEmail
 )
 from tags.models import Tags
-from recipes.models import Ingredient, IngredientsToRecipes, Favorited, Recipes, ShoppingCart
+from recipes.models import (Ingredient,
+                            IngredientsToRecipes,
+                            Favorited,
+                            Recipes,
+                            ShoppingCart)
 from users.models import User, Follow
 
 
@@ -32,16 +35,13 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class TagsSerializer(serializers.Serializer):
+class TagsSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Tag."""
-    id = serializers.IntegerField()
-    name = serializers.CharField(allow_blank=True, required=False)
-    color = serializers.CharField(allow_blank=True, required=False)
-    slug = serializers.CharField()
 
     class Meta:
         model = Tags
-        fields = "__all__"
+        fields = '__all__'
+        read_only_fields = ('name', 'color', 'slug',)
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -60,13 +60,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
         required=True,
         style={'input_type': 'password', 'placeholder': 'Password'}
     )
+
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name',
                   'last_name', 'password')
 
     def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data.get('password'))
+        validated_data['password'] = make_password(
+             validated_data.get('password'))
         return super(UserCreateSerializer, self).create(validated_data)
 
     def validate(self, data):
@@ -98,12 +100,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, following, *args, **kwargs):
         try:
-            status = Follow.objects.filter(user=self.context.get("request").user, author=following).exists()
+            status = Follow.objects.filter(
+                 user=self.context.get(
+                  "request").user, author=following).exists()
             return status
         except Exception:
             return False
         # return Follow.objects.filter(user=self.context.get("request").user, author=following).exists()
-
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -136,7 +139,9 @@ class AuthCustomTokenSerializer(serializers.Serializer):
                     msg = 'Акаунт пользователя декативирован'
                     raise ValidationError(msg)
             else:
-                msg = 'Невозможно войти в систему с предоставленными учетными данными.'
+                msg = (
+                    'Невозможно войти в систему'
+                    'с предоставленными учетными данными.')
                 raise ValidationError(msg)
         else:
             msg = 'Необходимо указать "email или username" и "password"'
@@ -276,7 +281,7 @@ class RecipesSerializer(serializers.ModelSerializer):
                 )
             )
         IngredientsToRecipes.objects.bulk_create(ingredients_list)
-    
+
     def to_representation(self, instance):
         return RecipesListSerializer(instance).data
 
@@ -369,7 +374,6 @@ class FollowSerializer(serializers.ModelSerializer):
             "recipes_count",
         )
 
-
     def validate(self, data):
         user = self.context.get("request").user
         following = data.get("following")
@@ -385,7 +389,9 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, following, *args, **kwargs):
         try:
-            status = Follow.objects.filter(user=self.context.get("request").user, author=following).exists()
+            status = Follow.objects.filter(
+                user=self.context.get(
+                 "request").user, author=following).exists()
             return status
         except Exception:
             return False
@@ -422,5 +428,3 @@ class ShopingCartSerializer(serializers.ModelSerializer):
                 f'Вы уже добавили в корзину {recipes}!'
             )
         return data
-
-    

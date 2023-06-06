@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Exists, OuterRef
 
 from tags.models import Tags
 from users.models import User
@@ -118,6 +117,7 @@ class Favorited(models.Model):
         default=False,
         verbose_name='В избранном ?'
     )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(

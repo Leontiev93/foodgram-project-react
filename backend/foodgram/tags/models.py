@@ -22,7 +22,7 @@ class Tags(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.name
+        return self.slug
 
     class Meta:
         verbose_name = 'Тег'
