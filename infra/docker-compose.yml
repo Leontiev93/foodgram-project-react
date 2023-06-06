@@ -18,7 +18,7 @@ services:
     env_file:
       - ./.env 
   frontend:
-    image: leontiev93/foodgram_project:latest
+    image: leontiev93/foodgram_frontend:latest
     restart: always
     volumes:
       - ../frontend/:/app/result_build/
