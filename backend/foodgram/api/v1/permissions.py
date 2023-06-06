@@ -1,7 +1,6 @@
 from rest_framework import permissions
 
 
-# Для регистрации
 class CreateNewUser(permissions.BasePermission):
     """Разрешение на создание записи администратора или суперпользователя."""
 
@@ -10,7 +9,6 @@ class CreateNewUser(permissions.BasePermission):
                 or request.user.is_authenticated)
 
 
-# Для моделей Recipes
 class AdminOrAuthor(permissions.BasePermission):
     """Разрешение для администратора или автора
     иначе чтение."""
