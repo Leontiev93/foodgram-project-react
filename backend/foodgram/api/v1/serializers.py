@@ -11,7 +11,7 @@ from django.core.files.base import ContentFile
 from api.v1.validators import (
     validate_username,
     validate_username_not_me,
-    validateEmail
+    validateemail
 )
 from tags.models import Tags
 from recipes.models import (Ingredient,
@@ -127,7 +127,7 @@ class AuthCustomTokenSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
         if email and password:
-            if validateEmail(email):
+            if validateemail(email):
                 user_request = get_object_or_404(
                     User,
                     email=email,
