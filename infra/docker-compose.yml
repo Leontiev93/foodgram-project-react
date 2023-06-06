@@ -19,7 +19,6 @@ services:
       - ./.env 
   frontend:
     image: leontiev93/foodgram_frontend:latest
-    restart: always
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
