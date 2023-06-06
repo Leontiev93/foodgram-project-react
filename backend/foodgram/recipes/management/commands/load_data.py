@@ -23,9 +23,13 @@ class Command(BaseCommand):
             f" user={USER} password={PASSWORD}")
         cur = conn.cursor()
         temp = []
-#        with open(r'Z:\Dev\foodgram-project-react\data\ingredients.csv', encoding='UTF-8', mode='r') as f:
-        with open(r'/home/german/Dev/foodgram-project-react/data/ingredients.csv', encoding='UTF-8', mode='r') as f:
-    
+#        with open(
+#                   r'Z:\Dev\foodgram-project-react\data\ingredients.csv',
+#                   encoding='UTF-8', mode='r') as f:
+        with open(
+            r'/home/german/Dev/foodgram-project-react/data/ingredients.csv',
+             encoding='UTF-8', mode='r') as f:
+
             new = csv.reader(f, delimiter=',', )
             for r in new:
                 temp.append(r)
@@ -35,20 +39,3 @@ class Command(BaseCommand):
         conn.commit()
         print('Данные закгруженны, коммит выполнен')
         conn.close()
-# conn = psycopg2.connect(
-#     f"host={HOST} port={PORT} dbname={DB_NAME}"
-#     f" user={USER} password={PASSWORD}")
-# cur = conn.cursor()
-# temp = []
-# with open(
-#         'foodgram-project-react\data\ingredients.csv',
-#         encoding='UTF-8',
-#         mode='r') as f:
-#     new = csv.reader(f, delimiter=',', )
-#     for r in new:
-#         temp.append(r)
-# cur.executemany(
-#     "INSERT INTO recipes_ingredient"
-#     "(name, measurement_unit) VALUES (%s, %s)", temp)
-# conn.commit()
-# conn.close()

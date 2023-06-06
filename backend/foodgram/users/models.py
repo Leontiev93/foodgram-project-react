@@ -32,7 +32,7 @@ class User(AbstractUser):
         help_text=(
             'Введите свое имя'
         ),
-        )
+    )
     last_name = models.CharField(
         verbose_name='Фамилия',
         max_length=LENGTH,
@@ -42,14 +42,14 @@ class User(AbstractUser):
         help_text=(
             'Введите свою фамилию'
         ),
-        )
+    )
     email = models.EmailField(
         verbose_name='email адрес',
         max_length=254,
         help_text=(
             'Введите электронный адрес в формате name@yandex.ru'
         ),
-        )
+    )
     following = models.ManyToManyField(
         'self',
         through='Follow',

@@ -2,7 +2,6 @@ from rest_framework.pagination import (
     PageNumberPagination,
     LimitOffsetPagination)
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import (
@@ -48,7 +47,6 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-##    queryset = Recipes.objects.all()
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filter_class = RecipesFilter
@@ -62,7 +60,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 #        tags = self.request.query_params.getlist('tags')
         if self.request.query_params.get('is_favorited') == '1':
             temp_queryset = Favorited.objects.filter(
-                    user=author).values('recipes_id')
+                user=author).values('recipes_id')
             queryset = queryset.filter(pk__in=temp_queryset)
         if self.request.query_params.get('is_in_shopping_cart') == '1':
             temp_queryset = ShoppingCart.objects.filter(
@@ -89,7 +87,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             if Favorited.objects.filter(
-                 user=request.user, recipes__id=pk).exists():
+                    user=request.user, recipes__id=pk).exists():
                 return Response(
                     {'errors': 'Рецепт уже добавлен в Избранное'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -101,9 +99,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_201_CREATED)
 
         if Favorited.objects.filter(
-             user=request.user, recipes__id=pk).exists():
+                user=request.user, recipes__id=pk).exists():
             Favorited.objects.filter(
-                 user=request.user, recipes__id=pk).delete()
+                user=request.user, recipes__id=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Рецепт не добавлен в Избранное'},
@@ -115,7 +113,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         if request.method == 'POST':
             if ShoppingCart.objects.filter(
-                 user=request.user, recipes__id=pk).exists():
+                    user=request.user, recipes__id=pk).exists():
                 return Response(
                     {'errors': 'Рецепт уже добавлен в корзину'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -126,9 +124,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         if ShoppingCart.objects.filter(
-             user=request.user, recipes__id=pk).exists():
+                user=request.user, recipes__id=pk).exists():
             ShoppingCart.objects.filter(
-                 user=request.user, recipes__id=pk).delete()
+                user=request.user, recipes__id=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Рецепт не добавлен в корзину'},
@@ -223,15 +221,15 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             serializers = FollowSerializer(
                 Follow.objects.create(
-                 user_id=request.user.id, author_id=user_id),
+                    user_id=request.user.id, author_id=user_id),
                 context={"request": request})
             return Response(
-                 data=serializers.data, status=status.HTTP_201_CREATED)
+                data=serializers.data, status=status.HTTP_201_CREATED)
         except Exception:
             if request.user.id == int(user_id):
                 return Response(
-                        "ползователь не может быть подписан на сомого себя",
-                        status.HTTP_400_BAD_REQUEST)
+                    "ползователь не может быть подписан на сомого себя",
+                    status.HTTP_400_BAD_REQUEST)
             return Response(
                 f"ползователь {request.user} уже подписан на {user.username}",
                 status.HTTP_400_BAD_REQUEST)
@@ -242,8 +240,8 @@ class UserViewSet(viewsets.ModelViewSet):
         user = get_object_or_404(User, pk=user_id)
         try:
             get_object_or_404(
-               Follow, user_id=request.user.id,
-               author_id=user_id).delete()
+                Follow, user_id=request.user.id,
+                author_id=user_id).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception:
             if request.user.id == int(user_id):
@@ -258,6 +256,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             return UserCreateSerializer
         return UserSerializer
+
 
 @api_view(['POST'])
 @parser_classes([parsers.FormParser,

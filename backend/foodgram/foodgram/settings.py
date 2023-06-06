@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 
-from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -50,12 +49,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
-#    'rest_framework_simplejwt',  # JWTAuthority
     'rest_framework.authtoken',
     'djoser',
 ]
 
-AUTH_USER_MODEL = 'users.User' # Переопределение модели пользователя
+AUTH_USER_MODEL = 'users.User'   # Переопределение модели пользователя
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -159,13 +157,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
- }
+}
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')

@@ -68,7 +68,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['password'] = make_password(
-             validated_data.get('password'))
+            validated_data.get('password'))
         return super(UserCreateSerializer, self).create(validated_data)
 
     def validate(self, data):
@@ -101,12 +101,13 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, following, *args, **kwargs):
         try:
             status = Follow.objects.filter(
-                 user=self.context.get(
-                  "request").user, author=following).exists()
+                user=self.context.get(
+                    "request").user, author=following).exists()
             return status
         except Exception:
             return False
-        # return Follow.objects.filter(user=self.context.get("request").user, author=following).exists()
+        # return Follow.objects.filter(
+        # user=self.context.get("request").user, author=following).exists()
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -223,8 +224,8 @@ class RecipesListSerializer(serializers.ModelSerializer):
         try:
             user = self.context.get("request").user
             return Favorited.objects.filter(
-             user=user.id, recipes=recipes.id
-             ).exists()
+                user=user.id, recipes=recipes.id
+            ).exists()
         except Exception:
             return False
 
@@ -233,7 +234,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
             user = self.context.get("request").user
             return ShoppingCart.objects.filter(
                 user=user.id, recipes=recipes.id
-                ).exists()
+            ).exists()
         except Exception:
             return False
 
@@ -391,7 +392,7 @@ class FollowSerializer(serializers.ModelSerializer):
         try:
             status = Follow.objects.filter(
                 user=self.context.get(
-                 "request").user, author=following).exists()
+                    "request").user, author=following).exists()
             return status
         except Exception:
             return False

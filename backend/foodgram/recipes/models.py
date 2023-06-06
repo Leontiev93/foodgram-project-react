@@ -59,8 +59,8 @@ class Recipes(models.Model):
         help_text='введите время приготовления в минутах',
         validators=[
             MinValueValidator(1, 'минимальное значение 1')
-            ]
-        )
+        ]
+    )
 
     def __str__(self) -> str:
         return self.name
@@ -85,8 +85,8 @@ class IngredientsToRecipes(models.Model):
         help_text='Введите количество минимальное значение 1',
         validators=[
             MinValueValidator(1, 'минимальное значение 1')
-            ]
-        )
+        ]
+    )
 
     def __str__(self) -> str:
         return f'В {self.recipes} -->{self.amount} {self.ingredient}'

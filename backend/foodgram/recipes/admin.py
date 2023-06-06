@@ -6,7 +6,7 @@ from .models import (
     Ingredient,
     Favorited,
     ShoppingCart
-    )
+)
 
 
 @admin.register(Recipes)
@@ -34,7 +34,7 @@ class RecipesAdmin(admin.ModelAdmin):
 
     def _ingredients(self, obj):
         return ', '.join(
-             [ingredient.name for ingredient in obj.ingredients.all()])
+            [ingredient.name for ingredient in obj.ingredients.all()])
 
 
 @admin.register(IngredientsToRecipes)

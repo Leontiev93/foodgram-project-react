@@ -30,7 +30,8 @@ class AdminUser(admin.ModelAdmin):
     def _following(self, obj):
         print(self)
         print(obj.following.all())
-        return ', '.join([following.username for following in obj.following.all()])
+        return ', '.join(
+            [following.username for following in obj.following.all()])
 
 
 @admin.register(Follow)
