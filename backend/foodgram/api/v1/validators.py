@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 USERNAME_MAX_LEN_VALUE = 150
 
 
-def validateEmail(email):
+def validateemail(email):
     try:
         validate_email(email)
         return True
