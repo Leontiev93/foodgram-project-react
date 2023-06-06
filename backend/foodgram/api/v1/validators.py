@@ -42,7 +42,7 @@ def validate_email_password(self, attrs):
                             email=email, password=password)
         if not user:
             msg = (
-                'Не возможно войти в систему email и password не совпадают.')
+                'Не возможно войти в систему email и password не совпадают!.')
             raise serializers.ValidationError(msg, code='authorization')
     else:
         msg = ('Должен включать "email" and "password".')
