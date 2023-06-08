@@ -1,22 +1,11 @@
 import base64
 
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
-from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
 
-from api.v1.validators import (
-    validate_username,
-    validate_username_not_me,
-    validateemail
-)
 from tags.models import Tags
 from recipes.models import (Ingredient,
                             IngredientsToRecipes,
-                            Favorited,
                             Recipes,
                             ShoppingCart)
 from users.models import User, Follow

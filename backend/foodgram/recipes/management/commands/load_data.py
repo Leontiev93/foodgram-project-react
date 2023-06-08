@@ -37,6 +37,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Ингридиенты загружены"))
         except ValidationError as error:
             self.style.ERROR(
-                'Ошибка загрузки файла с ингридами, ошибка {}'.format(
-                 str(error))
+                    'Ошибка загрузки файла с ингридами, ошибка {}'.format(
+                     str(error))
             )

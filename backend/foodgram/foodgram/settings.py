@@ -100,7 +100,7 @@ DJOSER = {
         'token_create': ['rest_framework.permissions.AllowAny'],
         'token_destroy': ['djoser.permissions.CurrentUserOrAdmin'],
     },
-    'SERIALIZERS':{
+    'SERIALIZERS': {
         'set_password': 'djoser.serializers.SetPasswordSerializer',
         'set_password_retype': 'djoser.serializers.SetPasswordRetypeSerializer',
         'set_username': 'djoser.serializers.SetUsernameSerializer',

@@ -1,5 +1,4 @@
 from rest_framework.pagination import (
-    PageNumberPagination,
     LimitOffsetPagination)
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -138,7 +137,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             arr += (
                 f'№ {count}  '
                 f'{product["recipes__ingredients_amount__ingredient__name"]}-'
-                f'{product["recipes__ingredients_amount__ingredient__measurement_unit"]}-'
+                f'{product}'
+                f'{["recipes__ingredients_amount__ingredient__measurement_unit"]}-'
                 f'{product["recipes__ingredients_amount__amount"]}\n'
             )
         content = {
@@ -189,7 +189,8 @@ class FollowUserView(APIView):
             ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-                f"ползователь {request.user} не подписан на {request.user.username}",
+                f"ползователь {request.user} "
+                f"не подписан на {request.user.username}",
                 status.HTTP_400_BAD_REQUEST)
 
 
