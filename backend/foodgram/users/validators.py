@@ -1,10 +1,14 @@
-from rest_framework import serializers
+from django.core import validators
+from django.utils.deconstruct import deconstructible
+from django.utils.translation import gettext_lazy as _
 
 
-def validate_username_not_me(value):
-    """Валидатор, не допускающий создания пользователя с ником 'me'."""
-    if value.lower() == 'me':
-        raise serializers.ValidationError(
-            'Нельзя использовать \'me\' в качестве юзернейма'
-        )
-    return value
+@deconstructible
+class UsernameValidator(validators.RegexValidator):
+    regex = r"^[\w.@+-]+\z"
+    message = _(
+        "Введите любые буквы на литинице и целые числа, "
+        "целое число от 0 до 9 и любая буква от A,a до Z,z."
+        "а так же символы -, @"
+    )
+    flags = 0

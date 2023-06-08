@@ -19,11 +19,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='first_name',
-            field=models.CharField(help_text='Введите свое имя', max_length=150, validators=[users.validators.validate_username_not_me, django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='Имя'),
+            field=models.CharField(help_text='Введите свое имя', max_length=150, validators=[django.contrib.auth.validators.UnicodeUsernameValidator(), ], verbose_name='Имя'),
         ),
         migrations.AlterField(
             model_name='user',
             name='last_name',
-            field=models.CharField(help_text='Введите свою фамилию', max_length=150, validators=[users.validators.validate_username_not_me, django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='Фамилия'),
+            field=models.CharField(help_text='Введите свою фамилию', max_length=150, validators=[django.contrib.auth.validators.UnicodeUsernameValidator(), ], verbose_name='Фамилия'),
         ),
     ]

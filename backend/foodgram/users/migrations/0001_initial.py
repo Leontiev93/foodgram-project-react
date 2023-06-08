@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('username', models.CharField(error_messages={'unique': 'Пользователь с таким именем уже существует'}, help_text='Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_', max_length=150, unique=True, validators=[users.validators.validate_username_not_me, django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='Имя пользователя')),
+                ('username', models.CharField(error_messages={'unique': 'Пользователь с таким именем уже существует'}, help_text='Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator(),], verbose_name='Имя пользователя')),
                 ('first_name', models.CharField(help_text='Введите свое имя', max_length=150, verbose_name='Имя')),
                 ('last_name', models.CharField(help_text='Введите свою фамилию', max_length=150, verbose_name='Фамилия')),
                 ('email', models.EmailField(help_text='Введите электронный адрес в формате name@yandex.ru', max_length=254, verbose_name='email адрес')),

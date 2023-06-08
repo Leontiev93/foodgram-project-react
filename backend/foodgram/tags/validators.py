@@ -11,3 +11,13 @@ class HexValidator(validators.RegexValidator):
         "целое число от 0 до 9 и любая буква от A до F."
     )
     flags = 0
+
+
+@deconstructible
+class SlugValidator(validators.RegexValidator):
+    regex = r"^[-a-zA-Z0-9_]+$"
+    message = _(
+        "Введите любые буквы на литинице и целые числа, "
+        "целое число от 0 до 9 и любая буква от A,a до Z,z."
+    )
+    flags = 0

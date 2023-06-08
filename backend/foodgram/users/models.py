@@ -1,20 +1,19 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
+from django.conf import settings
 
-from users.validators import validate_username_not_me
 
-LENGTH = 150
+from users.validators import UsernameValidator
 
 
 class User(AbstractUser):
     """Модель пользователя"""
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=LENGTH,
+        max_length=settings.LENGTH_USER,
         unique=True,
-        validators=(validate_username_not_me,
-                    UnicodeUsernameValidator()
+        validators=(UsernameValidator(),
                     ),
         help_text=(
             'Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_'
@@ -25,9 +24,8 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=LENGTH,
-        validators=(validate_username_not_me,
-                    UnicodeUsernameValidator()
+        max_length=settings.LENGTH_USER,
+        validators=(UsernameValidator(),
                     ),
         help_text=(
             'Введите свое имя'
@@ -35,9 +33,8 @@ class User(AbstractUser):
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=LENGTH,
-        validators=(validate_username_not_me,
-                    UnicodeUsernameValidator()
+        max_length=settings.LENGTH_USER,
+        validators=(UsernameValidator(),
                     ),
         help_text=(
             'Введите свою фамилию'
@@ -45,7 +42,8 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='email адрес',
-        max_length=254,
+        max_length=settings.LENGTH_USER_EMAIL,
+        unique=True,
         help_text=(
             'Введите электронный адрес в формате name@yandex.ru'
         ),
@@ -57,16 +55,10 @@ class User(AbstractUser):
         symmetrical=False
     )
 
-    REQUIRED_FIELDS = ['first_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
         ordering = ('username', 'email')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['username', 'email'],
-                name="unique_fields"
-            ),
-        ]
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 

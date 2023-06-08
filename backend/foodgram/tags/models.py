@@ -1,15 +1,14 @@
 from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.conf import settings
 
-from tags.validators import HexValidator
-
-LENGTH = 200
+from tags.validators import HexValidator, SlugValidator
 
 
 class Tags(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=LENGTH,
+        max_length=settings.LENGTH_TAGS,
         help_text='введите название тега',
         validators=(UnicodeUsernameValidator(),
                     )
@@ -22,10 +21,12 @@ class Tags(models.Model):
                     )
     )
     slug = models.SlugField(
-        max_length=LENGTH,
+        max_length=settings.LENGTH_TAGS,
         unique=True,
         verbose_name='адрес',
         help_text='введите уникальный слаг',
+        validators=(SlugValidator(),
+                    )
     )
 
     def __str__(self) -> str:
