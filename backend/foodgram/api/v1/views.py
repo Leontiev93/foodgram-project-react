@@ -132,14 +132,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
 #        ).annotate(amount=Sum('recipes__ingredientstorecipes__amount'))
         count = 0
         arr = 'Список покупок \n'
-        for product in grocery_list:
+        for prod in grocery_list:
             count += 1
             arr += (
                 f'№ {count}  '
-                f'{product["recipes__ingredients_amount__ingredient__name"]}-'
-                f'{product}'
-                f'{["recipes__ingredients_amount__ingredient__measurement_unit"]}-'
-                f'{product["recipes__ingredients_amount__amount"]}\n'
+                f'{prod["recipes__ingredients_amount__ingredient__name"]}-'
+                f'{prod}'
+                f'{["recipes__ingredients_amount__ingredient__measurement_unit"]}'
+                f'{prod["recipes__ingredients_amount__amount"]}\n'
             )
         content = {
             'Список покупок': f'{arr}'
@@ -175,9 +175,9 @@ class FollowUserView(APIView):
                 f"ползователь {request.user} уже подписан на {author}",
                 status.HTTP_400_BAD_REQUEST)
         serializers = FollowSerializer(
-                Follow.objects.create(
-                    user=request.user, author=author),
-                context={"request": request})
+                    Follow.objects.create(
+                     user=request.user, author=author),
+                    context={"request": request})
         return Response(
             data=serializers.data, status=status.HTTP_201_CREATED)
 
@@ -189,9 +189,9 @@ class FollowUserView(APIView):
             ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-                f"ползователь {request.user} "
-                f"не подписан на {request.user.username}",
-                status.HTTP_400_BAD_REQUEST)
+                    f"ползователь {request.user} "
+                    f"не подписан на {request.user.username}",
+                    status.HTTP_400_BAD_REQUEST)
 
 
 class FavoritedViewSet(mixins.ListModelMixin,

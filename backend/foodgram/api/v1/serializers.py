@@ -43,8 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, author, *args, **kwargs):
-        user = self.context.get(
-                    "request")
+        user = self.context.get("request")
         if user is not None:
             return user.user.from_follower.filter(author=author).exists()
         return False
@@ -118,7 +117,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, recipes, *args, **kwargs):
         return IngredientsToRecipesCreateSerializer(
-             recipes.ingredients_amount.all(), many=True).data
+                 recipes.ingredients_amount.all(), many=True).data
 
     def get_is_favorited(self, recipes, *args, **kwargs):
         data = self.context.get('request')
