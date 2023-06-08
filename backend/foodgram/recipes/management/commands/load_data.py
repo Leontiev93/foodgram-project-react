@@ -38,5 +38,4 @@ class Command(BaseCommand):
         except ValidationError as error:
             self.style.ERROR(
                 'Ошибка загрузки файла с ингридами, ошибка {}'.format(
-                 str(error))
-            )
+                    str(error)))

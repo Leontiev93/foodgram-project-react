@@ -179,7 +179,7 @@ class FollowUserView(APIView):
                 status.HTTP_400_BAD_REQUEST)
         serializers = FollowSerializer(
             Follow.objects.create(
-             user=request.user, author=author),
+                user=request.user, author=author),
             context={"request": request}
         )
         return Response(
@@ -193,9 +193,10 @@ class FollowUserView(APIView):
             ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-                    f"ползователь {request.user} "
-                    f"не подписан на {request.user.username}",
-                    status.HTTP_400_BAD_REQUEST)
+            f"ползователь {request.user} "
+            f"не подписан на {request.user.username}",
+            status.HTTP_400_BAD_REQUEST
+        )
 
 
 class FavoritedViewSet(mixins.ListModelMixin,
