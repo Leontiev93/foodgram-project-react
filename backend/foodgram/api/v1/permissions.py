@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 
 class CreateNewUser(permissions.BasePermission):
-    """Разрешение на создание записи администратора или суперпользователя."""
+    """Разрешение на создание записи пользователя."""
 
     def has_permission(self, request, view):
         return ((request.method == "POST" and request.user.is_anonymous)

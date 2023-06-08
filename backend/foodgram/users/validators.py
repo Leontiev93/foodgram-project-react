@@ -5,10 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 @deconstructible
 class UsernameValidator(validators.RegexValidator):
-    regex = r"^[\w.@+-]+\z"
+    regex = r'^[а-яА-ЯёЁa-zA-Z\-\@]+$'
     message = _(
-        "Введите любые буквы на литинице и целые числа, "
-        "целое число от 0 до 9 и любая буква от A,a до Z,z."
-        "а так же символы -, @"
+        "Введите любые буквы на литинице/кирилице и целые числа, "
+        "целое число от 0 до 9, а так же символы -, @"
     )
     flags = 0

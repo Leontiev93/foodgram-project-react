@@ -33,8 +33,9 @@ class RecipesAdmin(admin.ModelAdmin):
         return ', '.join([tag.name for tag in obj.tags.all()])
 
     def _ingredients(self, obj):
-        return ', '.join(
-            [ingredient.name for ingredient in obj.ingredients.all()])
+        return ', \n'.join(
+            [f'({ingredient.ingredient}, {ingredient.amount}\n)'
+               for ingredient in obj.ingredients_amount.all()])
 
 
 @admin.register(IngredientsToRecipes)

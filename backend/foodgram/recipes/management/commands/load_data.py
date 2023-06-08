@@ -1,41 +1,42 @@
 import os
-from dotenv import load_dotenv
-import psycopg2
-import csv
+import json
+
+from django.conf import settings
 
 from django.core.management.base import BaseCommand
+from django.core.exceptions import ValidationError
 
-load_dotenv()
+from recipes.models import Ingredient
 
-HOST = os.getenv('DB_HOST')
-PORT = os.getenv('DB_PORT')
-DB_NAME = os.getenv('DB_NAME')
-USER = os.getenv('POSTGRES_USER')
-PASSWORD = os.getenv('POSTGRES_PASSWORD')
+base_dir = settings.BASE_DIR
 
 
 class Command(BaseCommand):
-    help = 'Import CSV from data file'
+    help = 'Импорт ингридиентов с json файла'
 
     def handle(self, *args, **options):
-        conn = psycopg2.connect(
-            f"host={HOST} port={PORT} dbname={DB_NAME}"
-            f" user={USER} password={PASSWORD}")
-        cur = conn.cursor()
-        temp = []
-#        with open(
-#                   r'Z:\Dev\foodgram-project-react\data\ingredients.csv',
-#                   encoding='UTF-8', mode='r') as f:
-        with open(
-            r'/home/german/Dev/foodgram-project-react/data/ingredients.csv',
-             encoding='UTF-8', mode='r') as f:
+        ingredients = []
+        try:
+            with open(
+                 (os.path.join(
+                  base_dir, 'data/ingredients.json')),
+                    encoding='utf-8') as file_ingredients:
+                data = json.load(file_ingredients)
+        except FileNotFoundError:
+            self.stdout.write(self.style.ERROR('Файл не найден'))
 
-            new = csv.reader(f, delimiter=',', )
-            for r in new:
-                temp.append(r)
-        cur.executemany(
-            "INSERT INTO recipes_ingredient"
-            "(name, measurement_unit) VALUES (%s, %s)", temp)
-        conn.commit()
-        print('Данные закгруженны, коммит выполнен')
-        conn.close()
+        for ingredient in data:
+            ingredients.append(
+                Ingredient(
+                    name=ingredient['name'],
+                    measurement_unit=ingredient['measurement_unit']
+                )
+            )
+        try:
+            Ingredient.objects.bulk_create(ingredients)
+            self.stdout.write(self.style.SUCCESS("Ингридиенты загружены"))
+        except ValidationError as error:
+            self.style.ERROR(
+                'Ошибка загрузки файла с ингридами, ошибка {}'.format(
+                 str(error))
+            )

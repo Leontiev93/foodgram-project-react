@@ -4,17 +4,12 @@ from rest_framework.pagination import (
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.decorators import (
-    action,
-    api_view,
-    parser_classes,
-    renderer_classes)
+from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import mixins
-from rest_framework import parsers, renderers
-from rest_framework.authtoken.models import Token
+from rest_framework.generics import mixins, ListAPIView
 
 from .pagination import CustomPagination
 from .filters import RecipesFilter, IngredientFilter
@@ -26,15 +21,8 @@ from .serializers import (
     ShopingCartSerializer,
     FollowSerializer,
     RecipesListSerializer,
-    AuthCustomTokenSerializer,
-    UserSerializer,
-    UserCreateSerializer,
-    UserChangePasswordSerializer
 )
-from .permissions import (
-    CreateNewUser,
-    AdminOrAuthor
-)
+from .permissions import AdminOrAuthor
 from tags.models import Tags
 from recipes.models import Ingredient, Favorited, Recipes, ShoppingCart
 from users.models import User, Follow
@@ -137,10 +125,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         grocery_list = request.user.shoppingcart.values(
-            'recipes__ingredientstorecipes__recipes__name',
-            'recipes__ingredients__name',
-            'recipes__ingredients__measurement_unit',
-            'recipes__ingredientstorecipes__amount'
+            'recipes__ingredients_amount__recipes__name',
+            'recipes__ingredients_amount__ingredient__name',
+            'recipes__ingredients_amount__ingredient__measurement_unit',
+            'recipes__ingredients_amount__amount'
         )
 #        ).annotate(amount=Sum('recipes__ingredientstorecipes__amount'))
         count = 0
@@ -149,9 +137,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
             count += 1
             arr += (
                 f'№ {count}  '
-                f'{product["recipes__ingredients__name"]}-'
-                f'{product["recipes__ingredients__measurement_unit"]}-'
-                f'{product["recipes__ingredientstorecipes__amount"]}\n'
+                f'{product["recipes__ingredients_amount__ingredient__name"]}-'
+                f'{product["recipes__ingredients_amount__ingredient__measurement_unit"]}-'
+                f'{product["recipes__ingredients_amount__amount"]}\n'
             )
         content = {
             'Список покупок': f'{arr}'
@@ -168,123 +156,41 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete', 'retrieve']
-    queryset = User.objects.all()
-    pagination_class = PageNumberPagination
-    permission_classes = (CreateNewUser,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ('username',)
-
-    @action(
-        methods=[
-            'get',
-            'patch',
-        ],
-        detail=False,
-        url_path='me',
-        permission_classes=[IsAuthenticated],
-    )
-    def users_own_profile(self, request):
-        if request.method == 'GET':
-            serializer = UserSerializer(request.user)
-            return Response(serializer.data)
-        serializer = UserSerializer(
-            request.user, data=request.data, partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        methods=[
-            'post',
-        ],
-        detail=False,
-        url_path='set_password',
-        permission_classes=[IsAuthenticated],
-    )
-    def set_password(self, request, *args, **kwargs):
-        serializer = UserChangePasswordSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        self.request.user.set_password(serializer.data["new_password"])
-        self.request.user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False, methods=['post'],
-            url_path=r'(?P<id>\d+)/subscribe',
-            permission_classes=[IsAuthenticated],)
-    def follow(self, request, *args, **kwargs):
-        user_id = kwargs['id']
-        user = get_object_or_404(User, pk=user_id)
-        try:
-            serializers = FollowSerializer(
-                Follow.objects.create(
-                    user_id=request.user.id, author_id=user_id),
-                context={"request": request})
-            return Response(
-                data=serializers.data, status=status.HTTP_201_CREATED)
-        except Exception:
-            if request.user.id == int(user_id):
-                return Response(
-                    "ползователь не может быть подписан на сомого себя",
-                    status.HTTP_400_BAD_REQUEST)
-            return Response(
-                f"ползователь {request.user} уже подписан на {user.username}",
-                status.HTTP_400_BAD_REQUEST)
-
-    @follow.mapping.delete
-    def unfollow(self, request, *args, **kwargs):
-        user_id = kwargs['id']
-        user = get_object_or_404(User, pk=user_id)
-        try:
-            get_object_or_404(
-                Follow, user_id=request.user.id,
-                author_id=user_id).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception:
-            if request.user.id == int(user_id):
-                return Response(
-                    "ползователь не может быть подписан на сомого себя",
-                    status.HTTP_400_BAD_REQUEST)
-            return Response(
-                f"ползователь {request.user} не подписан на {user.username}",
-                status.HTTP_400_BAD_REQUEST)
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return UserCreateSerializer
-        return UserSerializer
-
-
-@api_view(['POST'])
-@parser_classes([parsers.FormParser,
-                 parsers.MultiPartParser,
-                 parsers.JSONParser,
-                 ])
-@renderer_classes([renderers.JSONRenderer, ])
-def create_token(request):
-    serializer = AuthCustomTokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.validated_data['user']
-    token, created = Token.objects.get_or_create(user=user)
-
-    content = {
-        'auth_token': token.key,
-    }
-
-    return Response(content, status=status.HTTP_201_CREATED)
-
-
-class FollowViewSet(mixins.ListModelMixin,
-                    viewsets.GenericViewSet):
+class FollowView(ListAPIView):
+    permission_classes = (IsAuthenticated, )
     serializer_class = FollowSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return self.request.user.from_follower.all()
+
+
+class FollowUserView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, id):
+        author = get_object_or_404(User, id=id)
+        if request.user.from_follower.filter(author=author).exists():
+            return Response(
+                f"ползователь {request.user} уже подписан на {author}",
+                status.HTTP_400_BAD_REQUEST)
+        serializers = FollowSerializer(
+                Follow.objects.create(
+                    user=request.user, author=author),
+                context={"request": request})
+        return Response(
+            data=serializers.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        author = get_object_or_404(User, id=id)
+        if request.user.from_follower.filter(author=author).exists():
+            request.user.from_follower.filter(
+                author=author
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+                f"ползователь {request.user} не подписан на {request.user.username}",
+                status.HTTP_400_BAD_REQUEST)
 
 
 class FavoritedViewSet(mixins.ListModelMixin,

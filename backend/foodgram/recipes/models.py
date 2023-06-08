@@ -1,24 +1,32 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.conf import settings
 
 from tags.models import Tags
 from users.models import User
+
+from recipes.validators import NameValidator
 
 
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название продукта',
-        max_length=200,
+        max_length=settings.LENGTH_RECIPES,
+        validators=(NameValidator(),)
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=200,
+        max_length=settings.LENGTH_RECIPES,
     )
 
     def __str__(self) -> str:
         return f'{self.name} измеряется в {self.measurement_unit}'
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=(
+                'name', 'measurement_unit'), name='unique_ingredient'),
+        ]
         ordering = ('name',)
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Игридиенты'
@@ -33,7 +41,7 @@ class Recipes(models.Model):
         help_text='Автор рецепта',
     )
     name = models.CharField(
-        max_length=200,
+        max_length=settings.LENGTH_RECIPES,
         verbose_name='Название',
         help_text='добавьте название блюда',
     )
@@ -43,18 +51,12 @@ class Recipes(models.Model):
         verbose_name='тег рецепта',
         help_text='добавьте тег рецепта',
     )
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        related_name='recipes',
-        through='IngredientsToRecipes',
-        through_fields=('recipes', 'ingredient'),
-    )
     image = models.ImageField(upload_to='media/photos/%Y%M%d/')
     text = models.TextField(
         verbose_name='описание',
         help_text='введите описание',
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='время приготовления в минутах ',
         help_text='введите время приготовления в минутах',
         validators=[
@@ -75,14 +77,17 @@ class IngredientsToRecipes(models.Model):
     recipes = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
+        related_name='ingredients_amount',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
+        related_name='+',
     )
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='количество',
         help_text='Введите количество минимальное значение 1',
+        default=1,
         validators=[
             MinValueValidator(1, 'минимальное значение 1')
         ]
@@ -109,7 +114,7 @@ class Favorited(models.Model):
         Recipes,
         on_delete=models.CASCADE,
         null=True,
-        related_name='favorited',
+        related_name='+',
         verbose_name='Рецепт',
         help_text='добавьте рецепт в избранном',
     )
@@ -140,7 +145,7 @@ class ShoppingCart(models.Model):
         Recipes,
         on_delete=models.CASCADE,
         null=True,
-        related_name='shoppingcart',
+        related_name='+',
         verbose_name='Рецепт',
         help_text='добавлен рецепт в корзину',
     )

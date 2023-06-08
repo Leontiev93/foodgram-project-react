@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.conf import settings
 
@@ -55,7 +54,8 @@ class User(AbstractUser):
         symmetrical=False
     )
 
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    USERNAME_FIELD = 'email'
 
     class Meta:
         ordering = ('username', 'email')

@@ -5,20 +5,14 @@ from django.urls import path, include
 from .views import (
     IngredientsViewSet,
     TagsViewSet,
-    create_token,
-    FollowViewSet,
-    UserViewSet,
+    FollowView,
+    FollowUserView,
     RecipesViewSet
 )
 
 app_name = 'api_v1'
 
 router_v1 = routers.DefaultRouter()
-router_v1.register(
-    'users/subscriptions',
-    FollowViewSet,
-    basename='follow'
-)
 router_v1.register(
     'ingredients',
     IngredientsViewSet,
@@ -33,15 +27,12 @@ router_v1.register(
     RecipesViewSet,
     basename='recipes'
 )
-router_v1.register(
-    'users',
-    UserViewSet,
-    basename='users'
-)
 
 urlpatterns = [
-    path('', include(router_v1.urls)),
-    path("auth/token/login/", create_token, name="token"),
-    path('auth/', include('djoser.urls')),
+    path('users/subscriptions/', FollowView.as_view()),
+    path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path('', include(router_v1.urls)),
+    path('users/<int:id>/subscribe/', FollowUserView.as_view()),
+
 ]
