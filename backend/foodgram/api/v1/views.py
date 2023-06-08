@@ -178,9 +178,10 @@ class FollowUserView(APIView):
                 f"ползователь {request.user} уже подписан на {author}",
                 status.HTTP_400_BAD_REQUEST)
         serializers = FollowSerializer(
-                    Follow.objects.create(
-                     user=request.user, author=author),
-                    context={"request": request})
+            Follow.objects.create(
+             user=request.user, author=author),
+            context={"request": request}
+        )
         return Response(
             data=serializers.data, status=status.HTTP_201_CREATED)
 
