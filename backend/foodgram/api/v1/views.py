@@ -123,11 +123,15 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(methods=['get', ], detail=False,
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
+        name_recipe = "recipes__ingredients_amount__recipes__name"
+        name_ingredient = "recipes__ingredients_amount__ingredient__name"
+        meas_unit = "recipes__ingredients_amount__ingredient__measurement_unit"
+        amount = "recipes__ingredients_amount__amount"
         grocery_list = request.user.shoppingcart.values(
-            'recipes__ingredients_amount__recipes__name',
-            'recipes__ingredients_amount__ingredient__name',
-            'recipes__ingredients_amount__ingredient__measurement_unit',
-            'recipes__ingredients_amount__amount'
+            name_recipe,
+            name_ingredient,
+            meas_unit,
+            amount
         )
 #        ).annotate(amount=Sum('recipes__ingredientstorecipes__amount'))
         count = 0
@@ -136,10 +140,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
             count += 1
             arr += (
                 f'№ {count}  '
-                f'{prod["recipes__ingredients_amount__ingredient__name"]}-'
-                f'{prod}'
-                f'{["recipes__ingredients_amount__ingredient__measurement_unit"]}'
-                f'{prod["recipes__ingredients_amount__amount"]}\n'
+                f'{prod[name_ingredient]}-'
+                f'{prod[meas_unit]}'
+                f'{prod[amount]}\n'
             )
         content = {
             'Список покупок': f'{arr}'

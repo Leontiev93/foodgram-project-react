@@ -117,7 +117,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, recipes, *args, **kwargs):
         return IngredientsToRecipesCreateSerializer(
-                 recipes.ingredients_amount.all(), many=True).data
+            recipes.ingredients_amount.all(), many=True).data
 
     def get_is_favorited(self, recipes, *args, **kwargs):
         data = self.context.get('request')
