@@ -59,6 +59,7 @@ jobs:
             sudo mkdir foodgram -p
             cd foodgram/
             sudo docker-compose stop
+            sudo systemctl stop nginx
             sudo docker-compose rm web
             sudo docker system prune -af
             rm .env
@@ -69,7 +70,7 @@ jobs:
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+            sudo docker pull --disable-content-trust ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker-compose up -d
             sudo docker-compose exec -T web python manage.py migrate
             sudo docker-compose exec -T web python manage.py collectstatic --no-input
