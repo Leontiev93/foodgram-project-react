@@ -50,6 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Ingredients."""
     class Meta:
         model = Ingredient
         fields = "__all__"
