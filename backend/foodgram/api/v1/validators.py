@@ -10,7 +10,7 @@ def validateemail(email):
     try:
         validate_email(email)
         return True
-    except ValidationError['введите правильный email адрес!']:
+    except ValidationError['введите правильный email адрес.!']:
         return False
 
 
