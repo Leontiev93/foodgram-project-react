@@ -4,15 +4,14 @@ from django.conf import settings
 
 from tags.models import Tags
 from users.models import User
-
-from recipes.validators import NameValidator
+from users.validators import FirstLastnameValidator
 
 
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название продукта',
         max_length=settings.LENGTH_RECIPES,
-        validators=(NameValidator(),)
+        validators=(FirstLastnameValidator(),)
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
@@ -77,7 +76,7 @@ class IngredientsToRecipes(models.Model):
     recipes = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
-        related_name='ingredients_amount',
+        related_name='ingredients',
     )
     ingredient = models.ForeignKey(
         Ingredient,

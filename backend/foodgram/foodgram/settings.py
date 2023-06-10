@@ -28,11 +28,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=vbl$q9p2=9)#=!++$*0qe4^(!n)m&d7-a+#y@n(a8f)e3=nog'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '*',
+    '158.160.107.119'
+    'localhost',
+    ]
 
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://158.160.107.119/admin',
+    'https:/https://158.160.107.119/',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -208,4 +216,5 @@ CORS_URLS_REGEX = r'^/api/.*$'
 LENGTH_USER = 150
 LENGTH_USER_EMAIL = 254
 LENGTH_TAGS = 200
+LENGTH_TAGS_HEX = 7
 LENGTH_RECIPES = 200

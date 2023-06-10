@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='tags',
             name='slug',
-            field=models.SlugField(help_text='введите уникальный слаг', max_length=200, unique=True, validators=[tags.validators.SlugValidator()], verbose_name='адрес'),
+            field=models.SlugField(help_text='введите уникальный слаг', max_length=200, unique=True, verbose_name='адрес'),
         ),
     ]

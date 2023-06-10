@@ -7,6 +7,7 @@ from tags.models import Tags
 from recipes.models import (Ingredient,
                             IngredientsToRecipes,
                             Recipes,
+                            Favorited,
                             ShoppingCart)
 from users.models import User, Follow
 
@@ -43,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, author, *args, **kwargs):
-        user = self.context.get("request")
+        user = self.context.get('request')
         if user is not None:
             return user.user.from_follower.filter(author=author).exists()
         return False
@@ -53,7 +54,14 @@ class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Ingredients."""
     class Meta:
         model = Ingredient
-        fields = "__all__"
+        fields = '__all__'
+
+
+class FavoritedSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Favorited
+        fields = ('id',)
 
 
 class IngredientsToRecipesSerializer(serializers.ModelSerializer):
@@ -68,10 +76,10 @@ class IngredientsToRecipesSerializer(serializers.ModelSerializer):
 
     def get_amount(self, ingredients, *args, **kwargs):
         amount_query = IngredientsToRecipes.objects.values(
-            "ingredient", "amount").filter(
+            'ingredient', 'amount').filter(
             ingredient=int(ingredients.id)
         )
-        amount = ([i["amount"] for i in amount_query])
+        amount = ([current_amount['amount'] for current_amount in amount_query])
         return amount[0]
 
 
@@ -118,7 +126,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, recipes, *args, **kwargs):
         return IngredientsToRecipesCreateSerializer(
-            recipes.ingredients_amount.all(), many=True).data
+            recipes.ingredients.all(), many=True).data
 
     def get_is_favorited(self, recipes, *args, **kwargs):
         data = self.context.get('request')
@@ -127,7 +135,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
         return data.user.favorited.filter(recipes=recipes.id).exists()
 
     def get_is_in_shopping_cart(self, recipes, *args, **kwargs):
-        data = self.context.get("request")
+        data = self.context.get('request')
         if data is None or data.user.is_anonymous:
             return False
         return data.user.shoppingcart.filter(recipes=recipes.id).exists()
@@ -152,7 +160,6 @@ class RecipesSerializer(serializers.ModelSerializer):
     )
     ingredients = IngredientsToRecipesCreateSerializer(
         many=True,
-        source="ingredients_amount"
     )
 
     class Meta:
@@ -188,7 +195,7 @@ class RecipesSerializer(serializers.ModelSerializer):
                 }
             )
         ingredients_list = []
-        ingredients_amount = data.get('ingredients_amount')
+        ingredients_amount = data.get('ingredients')
         for ingredient in ingredients_amount:
             if int(ingredient.get('amount')) <= 0:
                 raise serializers.ValidationError(
@@ -206,7 +213,7 @@ class RecipesSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients_amount')
+        ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
         recipe.tags.add(*tags)
@@ -221,7 +228,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             'cooking_time',
             instance.cooking_time
         )
-        ingredients = validated_data.pop('ingredients_amount')
+        ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         instance.tags.clear()
         instance.tags.add(*tags)
@@ -238,19 +245,19 @@ class FollowRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipes
         fields = (
-            "id",
-            "name",
-            "image",
-            "cooking_time",
+            'id',
+            'name',
+            'image',
+            'cooking_time',
         )
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField(source="author.email")
-    id = serializers.ReadOnlyField(source="author.id")
-    username = serializers.ReadOnlyField(source="author.username")
-    first_name = serializers.ReadOnlyField(source="author.first_name")
-    last_name = serializers.ReadOnlyField(source="author.last_name")
+    email = serializers.ReadOnlyField(source='author.email')
+    id = serializers.ReadOnlyField(source='author.id')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -258,28 +265,26 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
-            "recipes",
-            "recipes_count",
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
         )
 
     def validate(self, data):
-        user = self.context.get("request").user
-        following = data.get("following")
-        print(user)
-        print(following)
+        user = self.context.get('request').user
+        following = data.get('following')
         if Follow.objects.filter(user=user, following=following):
             raise serializers.ValidationError(
                 f'Вы уже подписаны на автора {following}!'
             )
         if user == following:
             raise serializers.ValidationError(
-                "Нельзя подписыватся на самого себя!"
+                'Нельзя подписыватся на самого себя!'
             )
         return data
 
@@ -287,7 +292,7 @@ class FollowSerializer(serializers.ModelSerializer):
         try:
             status = Follow.objects.filter(
                 user=self.context.get(
-                    "request").user, author=following).exists()
+                    'request').user, author=following).exists()
             return status
         except Exception:
             return False
@@ -314,11 +319,11 @@ class ShopingCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShoppingCart
         read_only_fields = ('user',)
-        exclude = ['id', "is_in_shopping_cart"]
+        exclude = ['id', 'is_in_shopping_cart']
 
     def validate(self, data):
-        user = self.context.get("request").user
-        recipes = data.get("recipes")
+        user = self.context.get('request').user
+        recipes = data.get('recipes')
         if ShoppingCart.objects.filter(user=user, recipes=recipes).exists():
             raise serializers.ValidationError(
                 f'Вы уже добавили в корзину {recipes}!'

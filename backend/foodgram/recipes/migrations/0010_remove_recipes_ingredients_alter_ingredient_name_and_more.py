@@ -3,7 +3,6 @@
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
-import recipes.validators
 
 
 class Migration(migrations.Migration):
@@ -20,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ingredient',
             name='name',
-            field=models.CharField(max_length=200, validators=[recipes.validators.NameValidator()], verbose_name='Название продукта'),
+            field=models.CharField(max_length=200, verbose_name='Название продукта'),
         ),
         migrations.AlterField(
             model_name='ingredientstorecipes',

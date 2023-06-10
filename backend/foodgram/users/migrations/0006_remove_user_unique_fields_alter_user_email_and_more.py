@@ -23,16 +23,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='first_name',
-            field=models.CharField(help_text='Введите свое имя', max_length=150, validators=[users.validators.UsernameValidator()], verbose_name='Имя'),
+            field=models.CharField(help_text='Введите свое имя', max_length=150, verbose_name='Имя'),
         ),
         migrations.AlterField(
             model_name='user',
             name='last_name',
-            field=models.CharField(help_text='Введите свою фамилию', max_length=150, validators=[users.validators.UsernameValidator()], verbose_name='Фамилия'),
+            field=models.CharField(help_text='Введите свою фамилию', max_length=150, verbose_name='Фамилия'),
         ),
         migrations.AlterField(
             model_name='user',
             name='username',
-            field=models.CharField(error_messages={'unique': 'Пользователь с таким именем уже существует'}, help_text='Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_', max_length=150, unique=True, validators=[users.validators.UsernameValidator()], verbose_name='Имя пользователя'),
+            field=models.CharField(error_messages={'unique': 'Пользователь с таким именем уже существует'}, help_text='Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_', max_length=150, unique=True, verbose_name='Имя пользователя'),
         ),
     ]

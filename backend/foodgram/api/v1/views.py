@@ -19,6 +19,7 @@ from .serializers import (
     RecipesShortListSerializer,
     ShopingCartSerializer,
     FollowSerializer,
+    FavoritedSerializer,
     RecipesListSerializer,
 )
 from .permissions import AdminOrAuthor
@@ -35,24 +36,25 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filter_class = RecipesFilter
+    filter_backends = [DjangoFilterBackend, ]
+#    filter_backends = [DjangoFilterBackend, RecipesFilter]
+    filter_class = (RecipesFilter, )
 #    filter_class = (filters.SearchFilter, )
     permission_classes = (AdminOrAuthor, )
-    filterset_fields = ('tags__slug', 'author')
+    filterset_fields = ('tags',)
 
     def get_queryset(self):
         queryset = Recipes.objects.all()
         author = self.request.user
 #        tags = self.request.query_params.getlist('tags')
-        if self.request.query_params.get('is_favorited') == '1':
-            temp_queryset = Favorited.objects.filter(
-                user=author).values('recipes_id')
-            queryset = queryset.filter(pk__in=temp_queryset)
-        if self.request.query_params.get('is_in_shopping_cart') == '1':
-            temp_queryset = ShoppingCart.objects.filter(
-                user=author).values('recipes_id')
-            queryset = queryset.filter(pk__in=temp_queryset)
+        # if self.request.query_params.get('is_favorited') == '1':
+        #     temp_queryset = Favorited.objects.filter(
+        #         user=author).values('recipes_id')
+        #     queryset = queryset.filter(pk__in=temp_queryset)
+        # if self.request.query_params.get('is_in_shopping_cart') == '1':
+        #     temp_queryset = ShoppingCart.objects.filter(
+        #         user=author).values('recipes_id')
+        #     queryset = queryset.filter(pk__in=temp_queryset)
         # if tags:
         #     temp_queryset = []
         #     [temp_queryset.append(
@@ -65,9 +67,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
+        print(1111111)
+        print(self.action)
+#        if self.action == 'favorited' or self.action == 'shopping_cart':
         if self.action in ('create', 'partial_update'):
             return RecipesSerializer
         return RecipesListSerializer
+        return RecipesSerializer
 
     @action(methods=['post', 'delete'], detail=True,
             permission_classes=(IsAuthenticated,))
@@ -152,9 +158,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
+    permission_classes = (AdminOrAuthor,)
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter,)
-    filter_class = (IngredientFilter,)
+    filter_backends = (IngredientFilter,)
     search_fields = ('^name',)
     pagination_class = None
 

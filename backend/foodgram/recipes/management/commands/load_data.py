@@ -2,13 +2,10 @@ import os
 import json
 
 from django.conf import settings
-
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ValidationError
 
 from recipes.models import Ingredient
-
-base_dir = settings.BASE_DIR
 
 
 class Command(BaseCommand):
@@ -19,7 +16,7 @@ class Command(BaseCommand):
         try:
             with open(
                  (os.path.join(
-                  base_dir, 'data/ingredients.json')),
+                  settings.BASE_DIR, 'data/ingredients.json')),
                     encoding='utf-8') as file_ingredients:
                 data = json.load(file_ingredients)
         except FileNotFoundError:
