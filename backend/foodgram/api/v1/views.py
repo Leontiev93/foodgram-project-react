@@ -6,7 +6,6 @@ from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import mixins, ListAPIView
 
@@ -19,7 +18,6 @@ from .serializers import (
     RecipesShortListSerializer,
     ShopingCartSerializer,
     FollowSerializer,
-    FavoritedSerializer,
     RecipesListSerializer,
 )
 from .permissions import AdminOrAuthor
@@ -45,7 +43,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Recipes.objects.all()
-        author = self.request.user
+#        author = self.request.user
 #        tags = self.request.query_params.getlist('tags')
         # if self.request.query_params.get('is_favorited') == '1':
         #     temp_queryset = Favorited.objects.filter(
@@ -73,7 +71,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'partial_update'):
             return RecipesSerializer
         return RecipesListSerializer
-        return RecipesSerializer
+#        return RecipesSerializer
 
     @action(methods=['post', 'delete'], detail=True,
             permission_classes=(IsAuthenticated,))

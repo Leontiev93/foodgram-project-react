@@ -79,7 +79,8 @@ class IngredientsToRecipesSerializer(serializers.ModelSerializer):
             'ingredient', 'amount').filter(
             ingredient=int(ingredients.id)
         )
-        amount = ([current_amount['amount'] for current_amount in amount_query])
+        amount = (
+            [current_amount['amount'] for current_amount in amount_query])
         return amount[0]
 
 
