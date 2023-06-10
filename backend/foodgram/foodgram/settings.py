@@ -39,6 +39,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
+    'http://web:8000/admin/',
     'http://localhost:3000',
     'http://localhost:8080',
     'http://158.160.107.119/admin',
