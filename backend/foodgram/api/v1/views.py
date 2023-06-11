@@ -56,7 +56,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(pk__in=temp_queryset)
         if tags:
             for tag in tags:
-                [slug_id_list.append(i.pk) for i in Tags.objects.filter(slug=tag)]
+                ([slug_id_list.append(i.pk)
+                    for i in Tags.objects.filter(slug=tag)])
             queryset = queryset.filter(tags__pk__in=slug_id_list)
         return self.filter_queryset(queryset)
 
