@@ -37,8 +37,9 @@ ALLOWED_HOSTS = [
     'product-helper.zapto.org',
 ]
 
-
 CSRF_TRUSTED_ORIGINS = [
+    'https://example.com',
+    'http://example.com',
     'http://localhost:8000',
     'http://web:8000/admin/',
     'http://localhost:3000',
