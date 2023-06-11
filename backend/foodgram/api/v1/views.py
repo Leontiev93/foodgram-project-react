@@ -103,7 +103,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             if ShoppingCart.objects.filter(
                     user=request.user, recipes__id=pk).exists():
                 return Response(
-                    {'errors': 'Рецепт уже добавлен в корзину!'},
+                    {'errors': 'Рецепт уже добавлен в корзину.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             recipes = get_object_or_404(Recipes, pk=pk)
