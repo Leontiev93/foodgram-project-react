@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     '*',
     '158.160.107.119'
     'localhost',
+    'product-helper.zapto.org',
 ]
 
 
