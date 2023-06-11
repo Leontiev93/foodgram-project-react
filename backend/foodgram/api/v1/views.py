@@ -36,6 +36,7 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipes.objects.all()
     pagination_class = CustomPagination
+    permission_classes = (AdminOrAuthor,)
     filter_class = (RecipesFilter,)
     filter_backends = [DjangoFilterBackend, ]
     permission_classes = (AdminOrAuthor, )
