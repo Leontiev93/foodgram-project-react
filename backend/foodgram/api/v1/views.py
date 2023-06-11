@@ -135,7 +135,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
             meas_unit,
             amount
         ))
-        # ).annotate(amount=Sum('recipes__ingredients__amount'))
         count = 0
         arr = f'Список покупок для {user.get_full_name()} \n\n'
         for prod in grocery_list:
