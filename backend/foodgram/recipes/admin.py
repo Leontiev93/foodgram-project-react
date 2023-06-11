@@ -35,7 +35,7 @@ class RecipesAdmin(admin.ModelAdmin):
     def _ingredients(self, obj):
         return ', \n'.join(
             [f'({ingredient.ingredient}, {ingredient.amount}\n)'
-               for ingredient in obj.ingredients_amount.all()])
+               for ingredient in obj.ingredients.all()])
 
 
 @admin.register(IngredientsToRecipes)

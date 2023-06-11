@@ -6,6 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import mixins, ListAPIView
 
@@ -43,7 +44,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Recipes.objects.all()
         author = self.request.user
-#        tags = self.request.query_params.getlist('tags')
+        tags = self.request.query_params.getlist('tags')
+        slug_id_list = []
         if self.request.query_params.get('is_favorited') == '1':
             temp_queryset = Favorited.objects.filter(
                 user=author).values('recipes_id')
@@ -52,12 +54,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
             temp_queryset = ShoppingCart.objects.filter(
                 user=author).values('recipes_id')
             queryset = queryset.filter(pk__in=temp_queryset)
-        # if tags:
-        #     temp_queryset = []
-        #     [temp_queryset.append(
-        #         Tags.objects.filter(slug=tag).values(
-        #          "recipes__id").all()) for tag in tags]
-        #     queryset = Recipes.objects.filter(id=temp_queryset)
+        if tags:
+            for tag in tags:
+                [slug_id_list.append(i.pk) for i in Tags.objects.filter(slug=tag)]
+            queryset = queryset.filter(tags__pk__in=slug_id_list)
         return self.filter_queryset(queryset)
 
     def perform_create(self, serializer):
@@ -122,31 +122,33 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(methods=['get', ], detail=False,
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        name_recipe = "recipes__ingredients_amount__recipes__name"
-        name_ingredient = "recipes__ingredients_amount__ingredient__name"
-        meas_unit = "recipes__ingredients_amount__ingredient__measurement_unit"
-        amount = "recipes__ingredients_amount__amount"
-        grocery_list = request.user.shoppingcart.values(
+        user = request.user
+        name_recipe = "recipes__ingredients__recipes__name"
+        name_ingredient = "recipes__ingredients__ingredient__name"
+        meas_unit = "recipes__ingredients__ingredient__measurement_unit"
+        amount = "recipes__ingredients__amount"
+        grocery_list = (user.shoppingcart.order_by(
+            name_ingredient).values(
             name_recipe,
             name_ingredient,
             meas_unit,
             amount
-        )
-#        ).annotate(amount=Sum('recipes__ingredientstorecipes__amount'))
+        ))
+        # ).annotate(amount=Sum('recipes__ingredients__amount'))
         count = 0
-        arr = 'Список покупок \n'
+        arr = f'Список покупок для {user.get_full_name()} \n\n'
         for prod in grocery_list:
             count += 1
             arr += (
                 f'№ {count}  '
                 f'{prod[name_ingredient]}-'
                 f'{prod[meas_unit]}'
-                f'{prod[amount]}\n'
+                f' {prod[amount]}\n\n'
             )
-        content = {
-            'Список покупок': f'{arr}'
-        }
-        return Response(content, status=status.HTTP_200_OK)
+        filename = f'{user.username}_shopping_list.txt'
+        response = HttpResponse(arr, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
