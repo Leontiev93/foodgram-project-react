@@ -65,23 +65,19 @@ class FavoritedSerializer(serializers.ModelSerializer):
 
 
 class IngredientsToRecipesSerializer(serializers.ModelSerializer):
-
-    name = serializers.CharField(required=False)
-    measurement_unit = serializers.CharField()
-    amount = serializers.SerializerMethodField()
+    id = serializers.CharField(source='ingredient_id')
+    name = serializers.SerializerMethodField(read_only=True)
+    measurement_unit = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = IngredientsToRecipes
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
-    def get_amount(self, ingredients, *args, **kwargs):
-        amount_query = IngredientsToRecipes.objects.values(
-            'ingredient', 'amount').filter(
-            ingredient=int(ingredients.id)
-        )
-        amount = (
-            [current_amount['amount'] for current_amount in amount_query])
-        return amount[0]
+    def get_measurement_unit(self, recipes):
+        return recipes.ingredient.measurement_unit
+
+    def get_name(self, recipes):
+        return recipes.ingredient.name
 
 
 class IngredientsToRecipesCreateSerializer(serializers.ModelSerializer):
@@ -126,7 +122,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, recipes, *args, **kwargs):
-        return IngredientsToRecipesCreateSerializer(
+        return IngredientsToRecipesSerializer(
             recipes.ingredients.all(), many=True).data
 
     def get_is_favorited(self, recipes, *args, **kwargs):
