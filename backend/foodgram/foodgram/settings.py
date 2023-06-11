@@ -38,15 +38,7 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://example.com',
-    'http://example.com',
-    'http://localhost:8000',
-    'http://web:8000/admin/',
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://158.160.107.119/admin',
-    'https://158.160.107.119/admin',
-    'https:/https://158.160.107.119/',
+    'http://158.160.107.119',
 ]
 # Application definition
 
