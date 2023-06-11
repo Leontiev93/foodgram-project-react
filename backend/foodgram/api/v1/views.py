@@ -59,7 +59,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
                 ([slug_id_list.append(i.pk)
                     for i in Tags.objects.filter(slug=tag)])
             queryset = queryset.filter(tags__pk__in=slug_id_list)
-        return self.filter_queryset(queryset)
+        return self.filter_queryset(queryset).distinct()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
