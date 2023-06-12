@@ -58,7 +58,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class FavoritedSerializer(serializers.ModelSerializer):
-
+    """Сериализатор для модели Favorited."""
     class Meta:
         model = Favorited
         fields = ('id',)
