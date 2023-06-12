@@ -39,7 +39,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminOrAuthor,)
     filter_class = (RecipesFilter,)
     filter_backends = [DjangoFilterBackend, ]
-    permission_classes = (AdminOrAuthor, )
     filterset_fields = ('tags__slug',)
 
     def get_queryset(self):
