@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.conf import settings
 
 from tags.validators import HexValidator
+from users.validators import FirstLastnameValidator
 
 
 class Tags(models.Model):
@@ -10,15 +10,13 @@ class Tags(models.Model):
         verbose_name='Название',
         max_length=settings.LENGTH_TAGS,
         help_text='введите название тега',
-        validators=(UnicodeUsernameValidator(),
-                    )
+        validators=(FirstLastnameValidator(),)
     )
     color = models.CharField(
         verbose_name='Цвет',
         max_length=settings.LENGTH_TAGS_HEX,
         help_text='введите цвет тега (HEX)',
-        validators=(HexValidator(),
-                    )
+        validators=(HexValidator(),)
     )
     slug = models.SlugField(
         max_length=settings.LENGTH_TAGS,

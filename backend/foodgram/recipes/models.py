@@ -104,7 +104,6 @@ class Favorited(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        null=True,
         related_name='favorited',
         verbose_name='Пользователь',
         help_text='Кто добавляет рецепт в избранное',
@@ -112,14 +111,9 @@ class Favorited(models.Model):
     recipes = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
-        null=True,
         related_name='+',
         verbose_name='Рецепт',
         help_text='добавьте рецепт в избранном',
-    )
-    is_favorited = models.BooleanField(
-        default=False,
-        verbose_name='В избранном ?'
     )
 
     class Meta:
@@ -135,7 +129,6 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        null=True,
         related_name='shoppingcart',
         verbose_name='Пользователь',
         help_text='Кто добавляет рецепт в корзину',
@@ -143,14 +136,9 @@ class ShoppingCart(models.Model):
     recipes = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
-        null=True,
         related_name='+',
         verbose_name='Рецепт',
         help_text='добавлен рецепт в корзину',
-    )
-    is_in_shopping_cart = models.BooleanField(
-        default=False,
-        verbose_name='В корзине ?'
     )
 
     class Meta:
