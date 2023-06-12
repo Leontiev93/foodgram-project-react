@@ -18,10 +18,6 @@ class RecipesFilter(django_filters.FilterSet):
         method='filter_is_in_shopping_cart'
     )
     author = django_filters.CharFilter(field_name='author')
-    # tags = django_filters.ModelMultipleChoiceFilter(
-    #     field_name='tags__slug',
-    #     to_field_name='slug',
-    #     queryset=Tags.objects.all())
     tags = django_filters.BooleanFilter(method='filter_tags')
 
     class Meta:
