@@ -72,7 +72,7 @@ jobs:
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DEBUG=True >> .env
-            echo ALLOWED_HOSTS=158.160.107.119,localhost,product-helper.zapto.org,127.0.0.1 >> .env
+            echo ALLOWED_HOSTS=158.160.107.119,localhost,product-helper.zapto.org,127.0.0.1,web:8000 >> .env
             echo CSRF_TRUSTED_ORIGINS=http://158.160.107.119 >> .env
             sudo docker pull --disable-content-trust ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker-compose up -d
