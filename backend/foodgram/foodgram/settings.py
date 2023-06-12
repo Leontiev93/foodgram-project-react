@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def read_env_var(name, default=None):
     if not name:
         raise ImproperlyConfigured(
-         f"The value must be provided as an env variable {name}")
+            f"The value must be provided as an env variable {name}")
     return name
 
 # Quick-start development settings - unsuitable for production
