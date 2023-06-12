@@ -1,5 +1,6 @@
 from rest_framework.pagination import (
     LimitOffsetPagination)
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -122,17 +123,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         user = request.user
-        name_recipe = "recipes__ingredients__recipes__name"
         name_ingredient = "recipes__ingredients__ingredient__name"
         meas_unit = "recipes__ingredients__ingredient__measurement_unit"
         amount = "recipes__ingredients__amount"
         grocery_list = (user.shoppingcart.order_by(
             name_ingredient).values(
-            name_recipe,
             name_ingredient,
             meas_unit,
-            amount
-        ))
+        )).annotate(amount_total=Sum(amount))
         count = 0
         arr = f'Список покупок для {user.get_full_name()} \n\n'
         for prod in grocery_list:
@@ -141,7 +139,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
                 f'№ {count}  '
                 f'{prod[name_ingredient]}-'
                 f'{prod[meas_unit]}'
-                f' {prod[amount]}\n\n'
+                f' {prod["amount_total"]}\n\n'
             )
         filename = f'{user.username}_shopping_list.txt'
         response = HttpResponse(arr, content_type='text/plain')
