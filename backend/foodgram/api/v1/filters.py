@@ -36,7 +36,6 @@ class RecipesFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, value):
         if value and self.request.user.is_authenticated:
-            print(self.request.user.favorited.values('recipes_id'))
             temp_queryset = self.request.user.favorited.values('recipes_id')
             return queryset.filter(id__in=temp_queryset)
         return queryset
