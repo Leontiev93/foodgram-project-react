@@ -51,11 +51,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if value_is_favorited:
             queryset = (
                 RecipesFilter.filter_is_favorited(
-                 self, queryset, value_is_favorited))
+                    self, queryset, value_is_favorited))
         if value_shopping_cart:
             queryset = (
                 RecipesFilter.filter_is_in_shopping_cart(
-                 self, queryset, value_shopping_cart))
+                    self, queryset, value_shopping_cart))
         if tags:
             for tag in tags:
                 ([slug_id_list.append(temp_tag.pk)
