@@ -8,6 +8,7 @@ from users.validators import FirstLastnameValidator
 class Tags(models.Model):
     name = models.CharField(
         verbose_name='Название',
+        unique=True,
         max_length=settings.LENGTH_TAGS,
         help_text='введите название тега',
         validators=(FirstLastnameValidator(),)
@@ -28,6 +29,11 @@ class Tags(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'color'], name='unique_name_color'
+            )
+        ]
 
     def __str__(self) -> str:
         return self.slug

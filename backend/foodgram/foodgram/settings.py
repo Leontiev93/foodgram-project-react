@@ -12,8 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 
 from dotenv import load_dotenv
-# from pathlib import Path
-
+from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
 
@@ -22,21 +21,29 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def read_env_var(name, default=None):
+    if not name:
+        raise ImproperlyConfigured(
+         f"The value must be provided as an env variable {name}")
+    return name
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+
+
 SECRET_KEY = os.getenv('SECRET_KEY'),
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = bool(os.getenv('DEBUG')),
+DEBUG = read_env_var(os.getenv('DEBUG'), "False") == "True"
 
-ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://158.160.107.119',
-]
+CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_TRUSTED_ORIGINS')]
+
+
 # Application definition
 
 INSTALLED_APPS = [

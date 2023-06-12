@@ -2,7 +2,7 @@ import django_filters
 from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 
-from recipes.models import Recipes, ShoppingCart, Favorited
+from recipes.models import Recipes
 from tags.models import Tags
 
 User = get_user_model()
@@ -18,7 +18,7 @@ class RecipesFilter(django_filters.FilterSet):
         method='filter_is_in_shopping_cart'
     )
     author = django_filters.CharFilter(field_name='author')
-    tags = django_filters.BooleanFilter(method='filter_tags')
+    tags = django_filters.AllValuesMultipleFilter(method='filter_tags')
 
     class Meta:
         model = Recipes
@@ -36,14 +36,13 @@ class RecipesFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, value):
         if value and self.request.user.is_authenticated:
-            temp_queryset = Favorited.objects.filter(
-                user=self.request.user).values('recipes_id')
+            print(self.request.user.favorited.values('recipes_id'))
+            temp_queryset = self.request.user.favorited.values('recipes_id')
             return queryset.filter(id__in=temp_queryset)
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, value):
         if value and self.request.user.is_authenticated:
-            temp_queryset = ShoppingCart.objects.filter(
-                user=self.request.user).values('recipes_id')
+            temp_queryset = self.request.user.shoppingcart.values('recipes_id')
             return queryset.filter(id__in=temp_queryset)
         return queryset
