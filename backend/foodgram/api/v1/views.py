@@ -47,7 +47,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
         tags = self.request.query_params.getlist('tags')
         value_shopping_cart = self.request.GET.get('is_in_shopping_cart')
         value_is_favorited = self.request.GET.get('is_favorited')
-        slug_id_list = []
         if value_is_favorited:
             queryset = (
                 RecipesFilter.filter_is_favorited(
@@ -57,10 +56,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
                 RecipesFilter.filter_is_in_shopping_cart(
                     self, queryset, value_shopping_cart))
         if tags:
-            for tag in tags:
-                ([slug_id_list.append(temp_tag.pk)
-                    for temp_tag in Tags.objects.filter(slug=tag)])
-            queryset = queryset.filter(tags__pk__in=slug_id_list)
+            queryset = RecipesFilter.filter_tags(self, queryset, tags)
         return self.filter_queryset(queryset).distinct()
 
     def perform_create(self, serializer):

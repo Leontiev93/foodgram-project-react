@@ -11,7 +11,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название продукта',
         max_length=settings.LENGTH_RECIPES,
-        validators=(FirstLastnameValidator(),)
+        validators=[FirstLastnameValidator(), ]
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
@@ -43,7 +43,7 @@ class Recipes(models.Model):
         max_length=settings.LENGTH_RECIPES,
         verbose_name='Название',
         help_text='добавьте название блюда',
-        validators=[FirstLastnameValidator, ]
+        validators=[FirstLastnameValidator(), ]
     )
     tags = models.ManyToManyField(
         Tags,

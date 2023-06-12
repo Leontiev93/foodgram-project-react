@@ -1,12 +1,10 @@
 from django.core import validators
-from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 
-@deconstructible
 class FirstLastnameValidator(validators.RegexValidator):
-    regex = r'^[а-яА-ЯёЁa-zA-Z\-]+$'
+    regex = r'^[а-яА-ЯёЁa-zA-Z -]+$'
     message = _(
         "Введите любые буквы на литинице/кирилице"
     )

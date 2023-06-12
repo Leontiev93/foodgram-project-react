@@ -11,6 +11,7 @@ from .models import (
 
 class IngredientsToRecipesInline(admin.TabularInline):
     model = IngredientsToRecipes
+    min_num = 1
 
 
 @admin.register(Recipes)
@@ -23,19 +24,19 @@ class RecipesAdmin(admin.ModelAdmin):
         'image',
         'text',
     ]
-    inlines = [
-        IngredientsToRecipesInline,
-    ]
+    inlines = [IngredientsToRecipesInline, ]
     list_display = (
         'pk',
         '_tags',
         '_ingredients',
         'name',
         'cooking_time',
+        'added_to_favorites_amount'
     )
     search_fields = ('name',)
     list_filter = ('author',)
     list_editable = ('cooking_time', )
+    readonly_fields = ('added_to_favorites_amount',)
     empty_value_display = '-пусто-'
 
     def _tags(self, obj):
@@ -45,6 +46,11 @@ class RecipesAdmin(admin.ModelAdmin):
         return ', \n'.join(
             [f'({ingredient.ingredient}, {ingredient.amount}\n)'
                for ingredient in obj.ingredients.all()])
+
+    def added_to_favorites_amount(self, obj):
+        return Favorited.objects.filter(recipes=obj).count()
+
+    added_to_favorites_amount.short_description = 'Добавлений в избранное'
 
 
 @admin.register(Ingredient)
