@@ -217,23 +217,14 @@ class RecipesSerializer(serializers.ModelSerializer):
         self.save_ingredients(recipe, ingredients)
         return recipe
 
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.image = validated_data.get('image', instance.image)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        instance.tags.clear()
-        instance.tags.add(*tags)
-        instance.ingredients.clear()
-        recipe = instance
-        self.save_ingredients(recipe, ingredients)
-        instance.save()
-        return instance
+    def update(self, recipe, validated_data):
+        if "ingredients" in validated_data:
+            ingredients = validated_data.pop("ingredients")
+            recipe.ingredients.all().delete()
+            self.save_ingredients(recipe, ingredients)
+        tags = self.initial_data.pop("tags")
+        recipe.tags.set(tags)
+        return super().update(recipe, validated_data)
 
 
 class FollowRecipeSerializer(serializers.ModelSerializer):
