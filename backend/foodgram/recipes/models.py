@@ -43,6 +43,7 @@ class Recipes(models.Model):
         max_length=settings.LENGTH_RECIPES,
         verbose_name='Название',
         help_text='добавьте название блюда',
+        validators=[FirstLastnameValidator, ]
     )
     tags = models.ManyToManyField(
         Tags,

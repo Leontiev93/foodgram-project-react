@@ -2,7 +2,7 @@ import django_filters
 from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 
-from recipes.models import Recipes
+from recipes.models import Recipes, ShoppingCart, Favorited
 from tags.models import Tags
 
 User = get_user_model()
@@ -28,11 +28,15 @@ class RecipesFilter(django_filters.FilterSet):
         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
 
     def filter_is_favorited(self, queryset, value):
+        temp_queryset = Favorited.objects.filter(
+                user=self.request.user).values('recipes_id')
         if value and self.request.user.is_authenticated:
-            return queryset.filter(user__favorited=self.request.user)
+            return queryset.filter(id__in=temp_queryset)
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, value):
+        temp_queryset = ShoppingCart.objects.filter(
+                 user=self.request.user).values('recipes_id')
         if value and self.request.user.is_authenticated:
-            return queryset.filter(user__shoppingcart=self.request.user)
+            return queryset.filter(id__in=temp_queryset)
         return queryset

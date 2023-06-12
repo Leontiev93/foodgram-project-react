@@ -9,6 +9,10 @@ from .models import (
 )
 
 
+class IngredientsToRecipesInline(admin.TabularInline):
+    model = IngredientsToRecipes
+
+
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
     fields = [
@@ -16,6 +20,11 @@ class RecipesAdmin(admin.ModelAdmin):
         'name',
         'cooking_time',
         'author',
+        'image',
+        'text',
+    ]
+    inlines = [
+        IngredientsToRecipesInline,
     ]
     list_display = (
         'pk',
@@ -36,20 +45,6 @@ class RecipesAdmin(admin.ModelAdmin):
         return ', \n'.join(
             [f'({ingredient.ingredient}, {ingredient.amount}\n)'
                for ingredient in obj.ingredients.all()])
-
-
-@admin.register(IngredientsToRecipes)
-class IngredientsToRecipesAdmin(admin.ModelAdmin):
-    list_display = (
-        'pk',
-        'recipes',
-        'ingredient',
-        'amount',
-    )
-    search_fields = ('recipes',)
-    list_filter = ('recipes',)
-    list_editable = ('ingredient', 'amount')
-    empty_value_display = '-пусто-'
 
 
 @admin.register(Ingredient)
@@ -77,20 +72,16 @@ class FavoritedAdmin(admin.ModelAdmin):
         'pk',
         'user',
         'recipes',
-        'is_favorited',
     )
     search_fields = (
         'pk',
         'user',
         'recipes',
-        'is_favorited',
     )
     list_filter = (
         'user',
         'recipes',
-        'is_favorited',
     )
-    list_editable = ('is_favorited',)
     empty_value_display = '-пусто-'
 
 
@@ -100,18 +91,14 @@ class ShoppingCartAdmin(admin.ModelAdmin):
         'pk',
         'user',
         'recipes',
-        'is_in_shopping_cart',
     )
     search_fields = (
         'pk',
         'user',
         'recipes',
-        'is_in_shopping_cart',
     )
     list_filter = (
         'user',
         'recipes',
-        'is_in_shopping_cart',
     )
-    list_editable = ('is_in_shopping_cart',)
     empty_value_display = '-пусто-'

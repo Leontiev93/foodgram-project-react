@@ -70,6 +70,9 @@ jobs:
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+            echo DEBUG=True >> .env
+            echo ALLOWED_HOSTS=158.160.107.119 >> .env
             sudo docker pull --disable-content-trust ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker-compose up -d
             sudo docker-compose exec -T web python manage.py migrate

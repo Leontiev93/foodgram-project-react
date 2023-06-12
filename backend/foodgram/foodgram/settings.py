@@ -18,24 +18,21 @@ from pathlib import Path
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=vbl$q9p2=9)#=!++$*0qe4^(!n)m&d7-a+#y@n(a8f)e3=nog'
+SECRET_KEY = os.getenv('SECRET_KEY'),
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = [
-    '*',
-    '158.160.107.119'
-    'localhost',
-    'product-helper.zapto.org',
-]
+DEBUG = bool(os.getenv('DEBUG')),
+
+ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS')]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://158.160.107.119',

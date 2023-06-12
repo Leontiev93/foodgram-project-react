@@ -44,21 +44,22 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Recipes.objects.all()
-        author = self.request.user
         tags = self.request.query_params.getlist('tags')
+        value_shopping_cart = self.request.GET.get('is_in_shopping_cart')
+        value_is_favorited = self.request.GET.get('is_favorited')
         slug_id_list = []
-        if self.request.query_params.get('is_favorited') == '1':
-            temp_queryset = Favorited.objects.filter(
-                user=author).values('recipes_id')
-            queryset = queryset.filter(pk__in=temp_queryset)
-        if self.request.query_params.get('is_in_shopping_cart') == '1':
-            temp_queryset = ShoppingCart.objects.filter(
-                user=author).values('recipes_id')
-            queryset = queryset.filter(pk__in=temp_queryset)
+        if value_is_favorited:
+            queryset = (
+                RecipesFilter.filter_is_favorited(
+                 self, queryset, value_is_favorited))
+        if value_shopping_cart:
+            queryset = (
+                RecipesFilter.filter_is_in_shopping_cart(
+                 self, queryset, value_shopping_cart))
         if tags:
             for tag in tags:
-                ([slug_id_list.append(i.pk)
-                    for i in Tags.objects.filter(slug=tag)])
+                ([slug_id_list.append(temp_tag.pk)
+                    for temp_tag in Tags.objects.filter(slug=tag)])
             queryset = queryset.filter(tags__pk__in=slug_id_list)
         return self.filter_queryset(queryset).distinct()
 
