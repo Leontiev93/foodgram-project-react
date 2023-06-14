@@ -2,18 +2,16 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView
 
 from .pagination import CustomPagination
-from .permissions import AdminOrAuthor
 from .filters import RecipesFilter, IngredientFilter
-from recipes.models import Ingredient, Favorited, Recipes, ShoppingCart
 from .serializers import (
     IngredientSerializer,
     TagsSerializer,
@@ -21,7 +19,9 @@ from .serializers import (
     FollowSerializer,
     RecipesListSerializer,
 )
+from .permissions import AdminOrAuthor
 from tags.models import Tags
+from recipes.models import Ingredient, Favorited, Recipes, ShoppingCart
 from users.models import User, Follow
 
 
@@ -32,12 +32,31 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    queryset = Recipes.objects.all()
     pagination_class = CustomPagination
     permission_classes = (AdminOrAuthor,)
     filter_class = (RecipesFilter,)
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ('tags', 'author')
+    filterset_fields = ('tags__slug', 'author')
+
+    def get_queryset(self):
+        queryset = Recipes.objects.all()
+        tags = self.request.query_params.getlist('tags')
+        value_shopping_cart = self.request.GET.get('is_in_shopping_cart')
+        value_is_favorited = self.request.GET.get('is_favorited')
+        author = self.request.GET.get('author')
+        if value_is_favorited:
+            queryset = (
+                RecipesFilter.filter_is_favorited(
+                    self, queryset, value_is_favorited))
+        if value_shopping_cart:
+            queryset = (
+                RecipesFilter.filter_is_in_shopping_cart(
+                    self, queryset, value_shopping_cart))
+        if tags:
+            queryset = RecipesFilter.filter_tags(self, queryset, tags)
+        if author:
+            queryset = queryset.filter(author__pk=author)
+        return self.filter_queryset(queryset).distinct()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -52,21 +71,21 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             if Favorited.objects.filter(
-                    user=request.user, recipes__id=pk).exists():
+                    user=request.user, recipe__id=pk).exists():
                 return Response(
                     {'errors': 'Рецепт уже добавлен в Избранное'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            recipes = get_object_or_404(Recipes, pk=pk)
-            Favorited.objects.create(user=request.user, recipes=recipes)
-            serializer = RecipesListSerializer(recipes)
+            recipe = get_object_or_404(Recipes, pk=pk)
+            Favorited.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipesListSerializer(recipe)
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 
         if Favorited.objects.filter(
-                user=request.user, recipes__id=pk).exists():
+                user=request.user, recipe__id=pk).exists():
             Favorited.objects.filter(
-                user=request.user, recipes__id=pk).delete()
+                user=request.user, recipe__id=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Рецепт не добавлен в Избранное'},
