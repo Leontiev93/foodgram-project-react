@@ -48,7 +48,7 @@ class RecipesAdmin(admin.ModelAdmin):
                for ingredient in obj.ingredients.all()])
 
     def added_to_favorites_amount(self, obj):
-        return Favorited.objects.filter(recipes=obj).count()
+        return Favorited.objects.filter(recipe=obj).count()
 
     added_to_favorites_amount.short_description = 'Добавлений в избранное'
 
