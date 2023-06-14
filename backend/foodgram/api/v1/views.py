@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import mixins, ListAPIView
+from rest_framework.generics import ListAPIView
 
 from .pagination import CustomPagination
 from .filters import RecipesFilter, IngredientFilter
@@ -16,8 +16,6 @@ from .serializers import (
     IngredientSerializer,
     TagsSerializer,
     RecipesSerializer,
-    RecipesShortListSerializer,
-    ShopingCartSerializer,
     FollowSerializer,
     RecipesListSerializer,
 )
@@ -38,13 +36,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminOrAuthor,)
     filter_class = (RecipesFilter,)
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ('tags__slug',)
+    filterset_fields = ('tags__slug', 'author')
 
     def get_queryset(self):
         queryset = Recipes.objects.all()
         tags = self.request.query_params.getlist('tags')
         value_shopping_cart = self.request.GET.get('is_in_shopping_cart')
         value_is_favorited = self.request.GET.get('is_favorited')
+        author = self.request.GET.get('author')
         if value_is_favorited:
             queryset = (
                 RecipesFilter.filter_is_favorited(
@@ -55,6 +54,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     self, queryset, value_shopping_cart))
         if tags:
             queryset = RecipesFilter.filter_tags(self, queryset, tags)
+        if author:
+            queryset = queryset.filter(author__pk=author)
         return self.filter_queryset(queryset).distinct()
 
     def perform_create(self, serializer):
@@ -191,23 +192,3 @@ class FollowUserView(APIView):
             f"не подписан на {request.user.username}",
             status.HTTP_400_BAD_REQUEST
         )
-
-
-class FavoritedViewSet(mixins.ListModelMixin,
-                       viewsets.GenericViewSet):
-    serializer_class = RecipesShortListSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def get_queryset(self):
-        return self.request.user.favorited.all()
-
-
-class ShoppingCartViewSet(mixins.CreateModelMixin,
-                          mixins.DestroyModelMixin,
-                          mixins.ListModelMixin,
-                          viewsets.GenericViewSet):
-    serializer_class = ShopingCartSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def get_queryset(self):
-        return self.request.user.shoppingcart.all()

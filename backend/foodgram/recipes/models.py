@@ -18,9 +18,6 @@ class Ingredient(models.Model):
         max_length=settings.LENGTH_RECIPES,
     )
 
-    def __str__(self) -> str:
-        return f'{self.name} измеряется в {self.measurement_unit}'
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
@@ -29,6 +26,9 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Игридиенты'
+
+    def __str__(self) -> str:
+        return f'{self.name} измеряется в {self.measurement_unit}'
 
 
 class Recipes(models.Model):
@@ -47,7 +47,6 @@ class Recipes(models.Model):
     )
     tags = models.ManyToManyField(
         Tags,
-        null=True,
         verbose_name='тег рецепта',
         help_text='добавьте тег рецепта',
     )
@@ -64,13 +63,13 @@ class Recipes(models.Model):
         ]
     )
 
-    def __str__(self) -> str:
-        return self.name
-
     class Meta:
         ordering = ('name',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class IngredientsToRecipes(models.Model):
@@ -93,12 +92,12 @@ class IngredientsToRecipes(models.Model):
         ]
     )
 
-    def __str__(self) -> str:
-        return f'В {self.recipes} -->{self.amount} {self.ingredient}'
-
     class Meta:
         verbose_name = 'Ингридиенты к рецептам'
         verbose_name_plural = 'Ингридиенты к рецептам'
+
+    def __str__(self) -> str:
+        return f'В {self.recipes} -->{self.amount} {self.ingredient}'
 
 
 class Favorited(models.Model):
@@ -109,7 +108,7 @@ class Favorited(models.Model):
         verbose_name='Пользователь',
         help_text='Кто добавляет рецепт в избранное',
     )
-    recipes = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
         related_name='+',
@@ -120,7 +119,7 @@ class Favorited(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
-                'user', 'recipes'), name='unique_favorited'),
+                'user', 'recipe'), name='unique_favorited'),
         ]
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
@@ -134,7 +133,7 @@ class ShoppingCart(models.Model):
         verbose_name='Пользователь',
         help_text='Кто добавляет рецепт в корзину',
     )
-    recipes = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
         related_name='+',
@@ -145,7 +144,7 @@ class ShoppingCart(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
-                'user', 'recipes'), name='unique_shoppingcart'),
+                'user', 'recipe'), name='unique_shoppingcart'),
         ]
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'

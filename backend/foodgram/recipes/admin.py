@@ -77,16 +77,16 @@ class FavoritedAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'user',
-        'recipes',
+        'recipe',
     )
     search_fields = (
         'pk',
         'user',
-        'recipes',
+        'recipe',
     )
     list_filter = (
         'user',
-        'recipes',
+        'recipe',
     )
     empty_value_display = '-пусто-'
 
@@ -96,15 +96,15 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'user',
-        'recipes',
+        'recipe',
     )
     search_fields = (
         'pk',
         'user',
-        'recipes',
+        'recipe',
     )
     list_filter = (
         'user',
-        'recipes',
+        'recipe',
     )
     empty_value_display = '-пусто-'

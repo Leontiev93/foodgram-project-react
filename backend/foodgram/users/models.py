@@ -81,9 +81,6 @@ class Follow(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'{self.user} подписался на {self.author}'
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=(
@@ -93,3 +90,6 @@ class Follow(models.Model):
         ]
         verbose_name = 'Подписки'
         verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user} подписался на {self.author}'
