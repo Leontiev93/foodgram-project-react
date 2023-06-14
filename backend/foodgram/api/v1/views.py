@@ -97,20 +97,20 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         if request.method == 'POST':
             if ShoppingCart.objects.filter(
-                    user=request.user, recipes__id=pk).exists():
+                    user=request.user, recipe__id=pk).exists():
                 return Response(
                     {'errors': 'Рецепт уже добавлен в корзину.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            recipes = get_object_or_404(Recipes, pk=pk)
-            ShoppingCart.objects.create(user=request.user, recipes=recipes)
-            serializer = RecipesListSerializer(recipes)
+            recipe = get_object_or_404(Recipes, pk=pk)
+            ShoppingCart.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipesListSerializer(recipe)
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         if ShoppingCart.objects.filter(
-                user=request.user, recipes__id=pk).exists():
+                user=request.user, recipe__id=pk).exists():
             ShoppingCart.objects.filter(
-                user=request.user, recipes__id=pk).delete()
+                user=request.user, recipe__id=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Рецепт не добавлен в корзину'},
@@ -121,9 +121,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         user = request.user
-        name_ingredient = "recipes__ingredients__ingredient__name"
-        meas_unit = "recipes__ingredients__ingredient__measurement_unit"
-        amount = "recipes__ingredients__amount"
+        name_ingredient = "recipe__ingredients__ingredient__name"
+        meas_unit = "recipe__ingredients__ingredient__measurement_unit"
+        amount = "recipe__ingredients__amount"
         grocery_list = (user.shoppingcart.order_by(
             name_ingredient).values(
             name_ingredient,
