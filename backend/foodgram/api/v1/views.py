@@ -35,9 +35,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipes.objects.all()
     pagination_class = CustomPagination
     permission_classes = (AdminOrAuthor,)
-    filter_class = (RecipesFilter,)
+    filterset_class = RecipesFilter
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ('tags', 'author')
+    filterset_fields = ('tags', 'author', )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
