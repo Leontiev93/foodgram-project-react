@@ -19,7 +19,7 @@ from .serializers import (
     FollowSerializer,
     RecipesListSerializer,
 )
-from .permissions import AdminOrAuthor
+from .permissions import AuthorPermission
 from tags.models import Tags
 from recipes.models import Ingredient, Favorited, Recipes, ShoppingCart
 from users.models import User, Follow
@@ -34,10 +34,9 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipes.objects.all()
     pagination_class = CustomPagination
-    permission_classes = (AdminOrAuthor,)
+    permission_classes = (AuthorPermission,)
     filterset_class = RecipesFilter
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ('tags', 'author', )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -128,7 +127,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
-    permission_classes = (AdminOrAuthor,)
+    permission_classes = (AuthorPermission,)
     serializer_class = IngredientSerializer
     filter_backends = (IngredientFilter,)
     search_fields = ('^name',)
