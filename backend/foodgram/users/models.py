@@ -45,6 +45,11 @@ class User(AbstractUser):
             'Введите электронный адрес в формате name@yandex.ru'
         ),
     )
+    password = models.CharField(
+        max_length=settings.LENGTH_USER,
+        verbose_name='Пароль',
+        help_text='Придумайте пароль'
+    )
     following = models.ManyToManyField(
         'self',
         through='Follow',

@@ -24,7 +24,6 @@ class AdminUser(admin.ModelAdmin):
     exclude = (
         'date_joined',
         'last_login',
-        'password'
     )
 
     def _following(self, obj):
