@@ -2,8 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.conf import settings
+from django.core.validators import RegexValidator
 
-from users.validators import FirstLastnameValidator, validate_username_not_me
+from users.validators import FirstLastnameValidator
 
 
 class User(AbstractUser):
@@ -13,7 +14,12 @@ class User(AbstractUser):
         max_length=settings.LENGTH_USER,
         unique=True,
         validators=(UnicodeUsernameValidator(),
-                    validate_username_not_me),
+                    RegexValidator(
+                        regex=r'\b(ME|me|Me|mE)\b',
+                        message='Нельзя использовать имя me,Me,mE,ME',
+                        code='invalid',
+                        inverse_match=True,
+        )),
         help_text=(
             'Требуется. Не более 150 символов. Только буквы, цифры и @/./+/-/_'
         ),
@@ -25,17 +31,13 @@ class User(AbstractUser):
         verbose_name='Имя',
         max_length=settings.LENGTH_USER,
         validators=(FirstLastnameValidator(),),
-        help_text=(
-            'Введите свое имя'
-        ),
+        help_text=('Введите свое имя'),
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
         max_length=settings.LENGTH_USER,
         validators=(FirstLastnameValidator(),),
-        help_text=(
-            'Введите свою фамилию'
-        ),
+        help_text=('Введите свою фамилию'),
     )
     email = models.EmailField(
         verbose_name='email адрес',
