@@ -32,30 +32,11 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
+    queryset = Recipes.objects.all()
     pagination_class = CustomPagination
     permission_classes = (AuthorPermission,)
     filterset_class = RecipesFilter
     filter_backends = [DjangoFilterBackend, ]
-
-    def get_queryset(self):
-        queryset = Recipes.objects.all()
-        tags = self.request.query_params.getlist('tags')
-        value_shopping_cart = self.request.GET.get('is_in_shopping_cart')
-        value_is_favorited = self.request.GET.get('is_favorited')
-        author = self.request.GET.get('author')
-        if value_is_favorited:
-            queryset = (
-                RecipesFilter.filter_is_favorited(
-                    self, queryset, value_is_favorited))
-        if value_shopping_cart:
-            queryset = (
-                RecipesFilter.filter_is_in_shopping_cart(
-                    self, queryset, value_shopping_cart))
-        if tags:
-            queryset = RecipesFilter.filter_tags(self, queryset, tags)
-        if author:
-            queryset = queryset.filter(author__pk=author)
-        return self.filter_queryset(queryset).distinct()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
